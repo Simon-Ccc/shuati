@@ -192,3 +192,66 @@ grant execute on function public.gen_invite_code(int) to authenticated;
 -- 可选加固：anon（未登录）一律不可读写业务表（RLS 已挡，这里双保险）
 revoke all on public.profiles, public.class_groups, public.class_members,
           public.user_state, public.progress_stats, public.admins from anon;
+
+-- ============ 关闭公开注册：管理员创建账号（姓名 + 密码） ============
+-- 登录用「姓名 + 密码」；email 由姓名派生，不对外展示。
+-- security definer + 函数内管理员校验；前端仅用 anon key 调 RPC。
+
+-- 管理员创建账号
+create or replace function public.admin_create_user(
+  p_name text,
+  p_password text
+) returns table (created boolean, display_name text, message text)
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_uid uuid;
+  v_name text := trim(p_name);
+  v_email text;
+begin
+  if not exists (select 1 from public.admins where user_id = auth.uid()) then
+    raise exception '仅管理员可创建账号';
+  end if;
+  if v_name = '' or v_name is null then
+    raise exception '请输入姓名';
+  end if;
+  if p_password is null or length(p_password) < 6 then
+    raise exception '密码至少 6 位';
+  end if;
+  if exists (select 1 from auth.users where raw_user_meta_data->>'display_name' = v_name) then
+    return query select false, v_name, '该姓名已存在，请加序号区分（如 ' || v_name || '2）';
+    return;
+  end if;
+  v_email := 'u' || substr(md5(v_name), 1, 20) || '@class.shiroha';
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at, raw_user_meta_data, created_at, updated_at
+  ) values (
+    '00000000-0000-0000-0000-0000-000000000000',
+    gen_random_uuid(),
+    'authenticated', 'authenticated', v_email,
+    extensions.crypt(p_password, extensions.gen_salt('bf')),
+    now(),
+    jsonb_build_object('display_name', v_name, 'provider', 'email'),
+    now(), now()
+  ) returning id into v_uid;
+  insert into public.profiles (user_id, display_name)
+  values (v_uid, v_name)
+  on conflict (user_id) do nothing;
+  return query select true, v_name, 'ok';
+end;
+$$;
+grant execute on function public.admin_create_user(text, text) to authenticated;
+
+-- 按姓名反查登录邮箱
+create or replace function public.get_user_email_by_name(p_name text)
+returns table (email text)
+language sql security definer set search_path = public
+as $$
+  select u.email
+  from auth.users u
+  where u.raw_user_meta_data->>'display_name' = trim(p_name)
+    and u.deleted_at is null
+  limit 1;
+$$;
+grant execute on function public.get_user_email_by_name(text) to authenticated;
