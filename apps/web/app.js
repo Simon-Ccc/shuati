@@ -8639,6 +8639,7 @@ function bindQuickPracticeV103(){
   const submit=$('#submitButton');if(submit)submit.onclick=qpSubmitV103;
   const cardBtn=$('#answerCardButton');if(cardBtn)cardBtn.onclick=qpOpenCardV103;
   const cardClose=$('#qp-card-close-v103');if(cardClose)cardClose.onclick=()=>{const dl=$('#answerCardDialog');if(dl&&dl.close)dl.close()};
+  const backHome=$('#qpBackHomeV103');if(backHome)backHome.onclick=()=>{try{exitPracticeFocus()}catch(e){}switchViewV45('home')};
   // 左右滑动切题（对齐 before 原版：面板内横向滑动）
   const qpPanel=$('#questionPanel');
   if(qpPanel){

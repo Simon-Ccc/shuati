@@ -7879,6 +7879,9 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 .qp-before-shell .option-text{min-width:0;padding-top:4px;line-height:1.45;overflow-wrap:anywhere}
 .qp-before-shell .submit-button{width:100%;margin-top:14px}
 .qp-before-shell .answer-panel{margin-top:16px;padding:14px;border-radius:8px;background:var(--panel-soft)}
+.qp-before-shell .qp-back-row{display:flex;justify-content:flex-start;margin-bottom:10px}
+.qp-before-shell .qp-back-btn{border:0;border-radius:8px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--muted);background:rgba(255,255,255,.85);border:1px solid rgba(31,41,51,.1);cursor:pointer}
+.qp-before-shell .qp-back-btn:active{background:rgba(255,255,255,.6)}
 .qp-before-shell .answer-panel p{margin:8px 0 0;color:#334155;line-height:1.55;white-space:pre-wrap;word-break:break-word}
 .qp-before-shell .bottom-actions{grid-template-columns:1fr 1fr 1fr;padding:8px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(251,250,246,.9)}
 .qp-before-shell .bottom-actions button{flex:1 1 0;min-width:0}
@@ -7891,7 +7894,7 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 .answer-card-item.is-correct{border-color:rgba(39,118,74,.7);color:#17603a;background:#e9f6ec}
 .answer-card-item.is-wrong{border-color:rgba(190,59,69,.68);color:#9d2f2f;background:#fbebed}
 .answer-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px;max-height:min(62vh,520px);overflow:auto}
-.answer-card-dialog{width:min(calc(100vw - 28px),720px);border:0;border-radius:8px;padding:0;color:var(--ink);background:var(--panel);box-shadow:var(--shadow)}
+.answer-card-dialog{width:min(calc(100vw - 28px),720px);border:0;border-radius:8px;padding:0;color:var(--ink);background:var(--panel,#faf9f5);box-shadow:var(--shadow)}
 .answer-card-dialog::backdrop{background:rgba(22,28,36,.42)}
 .answer-card-dialog form{display:grid;gap:14px;padding:18px}
 .answer-card-dialog .dialog-header{display:flex;align-items:center;justify-content:space-between}
