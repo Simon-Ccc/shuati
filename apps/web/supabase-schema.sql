@@ -223,16 +223,33 @@ begin
     return;
   end if;
   v_email := 'u' || substr(md5(v_name), 1, 20) || '@class.shiroha';
+  -- 注意：必须补齐 GoTrue 必填列（空字符串/0/false），否则登录时
+  -- GoTrue Scan 到 NULL 会报 500 "Database error querying schema"
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_user_meta_data, created_at, updated_at
+    email_confirmed_at, invited_at,
+    confirmation_token, recovery_token,
+    email_change_token_new, email_change,
+    email_change_token_current, email_change_confirm_status,
+    phone, phone_change_token, reauthentication_token,
+    raw_app_meta_data, raw_user_meta_data,
+    confirmed_at,
+    is_anonymous, is_sso_user,
+    created_at, updated_at
   ) values (
     '00000000-0000-0000-0000-000000000000',
     gen_random_uuid(),
     'authenticated', 'authenticated', v_email,
     extensions.crypt(p_password, extensions.gen_salt('bf')),
-    now(),
+    now(), null,
+    '', '',
+    '', '',
+    '', 0,
+    '', '', '',
+    '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object('display_name', v_name, 'provider', 'email'),
+    now(),
+    false, false,
     now(), now()
   ) returning id into v_uid;
   insert into public.profiles (user_id, display_name)
