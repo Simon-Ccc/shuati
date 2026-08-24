@@ -8557,6 +8557,7 @@ function qpAutoNextV103(){
 }
 function qpJumpV103(idx){
   if(idx<0||idx>=qpV103.visible.length)return;
+  if(qpV103.autoTimer){clearTimeout(qpV103.autoTimer);qpV103.autoTimer=0}
   qpV103.index=idx;
   qpSavePositionV103();
   qpRenderQuestionV103();
@@ -8638,6 +8639,22 @@ function bindQuickPracticeV103(){
   const submit=$('#submitButton');if(submit)submit.onclick=qpSubmitV103;
   const cardBtn=$('#answerCardButton');if(cardBtn)cardBtn.onclick=qpOpenCardV103;
   const cardClose=$('#qp-card-close-v103');if(cardClose)cardClose.onclick=()=>{const dl=$('#answerCardDialog');if(dl&&dl.close)dl.close()};
+  // 左右滑动切题（对齐 before 原版：面板内横向滑动）
+  const qpPanel=$('#questionPanel');
+  if(qpPanel){
+    let qpTouchStart=null;
+    qpPanel.addEventListener('pointerdown',e=>{
+      if(!e.isPrimary)return;
+      qpTouchStart={x:e.clientX,y:e.clientY,t:Date.now()};
+    });
+    qpPanel.addEventListener('pointerup',e=>{
+      if(!qpTouchStart||!e.isPrimary){qpTouchStart=null;return}
+      const dx=e.clientX-qpTouchStart.x,dy=e.clientY-qpTouchStart.y,elapsed=Date.now()-qpTouchStart.t;
+      qpTouchStart=null;
+      if(elapsed>700||Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.4)return;
+      qpJumpV103(qpV103.index+(dx<0?1:-1));
+    });
+  }
 }
 /* ============ 快速练习模块 V103 END ============ */
 
