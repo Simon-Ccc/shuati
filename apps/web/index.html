@@ -65,17 +65,6 @@
             <p class="kicker">当前版本</p>
             <h2 id="home-version-label">V37：本地题库版</h2>
             <p class="dashboard-home-desc">支持本地题库导入、练习和考试，并可按范围分批处理题目。</p><div id="home-practice-scope-v8916" class="practice-scope-summary-v8916 home-practice-scope-v8916"></div>
-            <div class="dashboard-action-grid quick-practice-grid-v103" aria-label="快速练习入口">
-              <button type="button" class="dashboard-action-card blue" id="quick-practice-random-v103">
-                <span>随机 20 题</span><small id="quick-practice-bank-v103">快速开始</small>
-              </button>
-              <button type="button" class="dashboard-action-card green" id="quick-practice-sequence-v103">
-                <span>顺序 20 题</span><small>按题库顺序</small>
-              </button>
-              <button type="button" class="dashboard-action-card violet" id="quick-practice-wrong-v103">
-                <span>错题重练</span><small>错题本 20 题</small>
-              </button>
-            </div>
             <div class="dashboard-action-grid" aria-label="首页快捷入口">
               <button type="button" class="dashboard-action-card blue" onclick="var n=document.querySelector('.nav[data-view=&quot;practice&quot;]');if(n)n.click();">
                 <span>快速练习</span><small>开刷当前题库</small>
@@ -284,6 +273,76 @@ C. 判断题
       </section>
 
       <section id="practice" class="view">
+        <div class="qp-before-shell">
+          <section class="subject-row" aria-label="题库选择">
+            <label class="subject-switcher">
+              <span>题库</span>
+              <select id="subjectSelect"></select>
+            </label>
+            <label class="chapter-switcher">
+              <span>分类</span>
+              <select id="chapterSelect"><option value="__all__">全部</option></select>
+            </label>
+          </section>
+
+          <section class="stats-grid" aria-label="刷题统计">
+            <div class="stat-card"><span>总题数</span><strong id="totalCount">0</strong></div>
+            <div class="stat-card"><span>已完成</span><strong id="doneCount">0</strong></div>
+            <div class="stat-card"><span>正确率</span><strong id="accuracy">0%</strong></div>
+          </section>
+
+          <section class="toolbar" aria-label="刷题控制">
+            <div class="mode-tabs" role="tablist" aria-label="刷题模式">
+              <button class="mode-tab is-active" type="button" data-mode="all">全部</button>
+              <button class="mode-tab" type="button" data-mode="memorize">背题</button>
+              <button class="mode-tab" type="button" data-mode="wrong">错题</button>
+              <button class="mode-tab" type="button" data-mode="starred">收藏</button>
+            </div>
+            <button class="icon-button" id="answerCardButton" type="button" aria-label="答题卡">
+              <span aria-hidden="true">📄</span>
+            </button>
+          </section>
+
+          <section class="question-panel" id="questionPanel" aria-live="polite">
+            <div class="question-meta">
+              <span id="questionType"></span>
+              <span id="questionPosition">0 / 0</span>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-bar" id="progressBar" style="width:0%"></div>
+            </div>
+            <div class="jump-control">
+              <input id="questionSlider" type="range" min="1" max="1" value="1" aria-label="题目进度">
+            </div>
+            <div class="question-heading">
+              <h2 id="questionText"></h2>
+            </div>
+            <div class="options" id="options"></div>
+            <button class="primary-button submit-button" id="submitButton" type="button" hidden>提交答案</button>
+            <div class="answer-panel" id="answerPanel" hidden>
+              <div class="answer-line" id="answerLine"></div>
+              <p id="explanation"></p>
+            </div>
+          </section>
+
+          <section class="bottom-actions" aria-label="题目操作">
+            <button class="secondary-button" id="prevButton" type="button">上一题</button>
+            <button class="secondary-button" id="starButton" type="button">收藏</button>
+            <button class="primary-button" id="nextButton" type="button">下一题</button>
+          </section>
+        </div>
+
+        <dialog class="answer-card-dialog" id="answerCardDialog">
+          <form method="dialog">
+            <div class="dialog-header">
+              <h2>答题卡</h2>
+              <button class="icon-button" type="submit" aria-label="关闭"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="answer-card-grid" id="answerCardGrid"></div>
+          </form>
+        </dialog>
+
+        <div id="qp-legacy-v103" style="display:none">
         <div class="card qp-card-v103">
           <div class="section-head"><div><p class="kicker">Quick Practice</p><h2>快速练习</h2></div><div class="pill qp-position-v103" id="qp-position-v103">0 / 0</div></div>
           <div class="qp-picker-row-v103">
@@ -351,6 +410,7 @@ C. 判断题
         <div class="card quiz-card" id="practice-card">
           <div class="empty">选择条件后点击“开始练习”。</div>
         </div>
+      </div>
       </div>
       </section>
 

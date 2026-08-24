@@ -4401,18 +4401,6 @@ body.exam-focus #exam-card{
   color:#12233f;
   transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
-#dashboard .dashboard-action-card::before{
-  content:"";
-  width:44px;
-  height:44px;
-  border-radius:16px;
-  display:block;
-  background:linear-gradient(135deg,#3b82f6,#6aa6ff);
-  box-shadow:0 10px 20px rgba(59,130,246,.20);
-}
-#dashboard .dashboard-action-card.green::before{background:linear-gradient(135deg,#34d399,#60d6bc)}
-#dashboard .dashboard-action-card.violet::before{background:linear-gradient(135deg,#8b5cf6,#b69cff)}
-#dashboard .dashboard-action-card.amber::before{background:linear-gradient(135deg,#f59e0b,#ffc767)}
 #dashboard .dashboard-action-card:hover{
   transform:translateY(-2px);
   border-color:rgba(47,111,237,.24);
@@ -4562,13 +4550,6 @@ body.exam-focus #exam-card{
   border-color:rgba(47,111,237,.12) !important;
   background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(247,251,255,.96)) !important;
   box-shadow:0 10px 24px rgba(37,99,235,.055), inset 0 1px 0 rgba(255,255,255,.92) !important;
-}
-#dashboard .dashboard-action-card::before{
-  width:40px !important;
-  height:40px !important;
-  border-radius:15px !important;
-  background:linear-gradient(135deg,#4f8df7,#8bbcff) !important;
-  box-shadow:0 10px 20px rgba(47,111,237,.16) !important;
 }
 #dashboard .dashboard-action-card.blue::before{
   background:linear-gradient(135deg,#3f7df2,#8bbcff) !important;
@@ -4878,11 +4859,6 @@ body.exam-focus #exam-card{
 #dashboard .dashboard-action-card{
   min-height:104px !important;
   padding:14px 12px !important;
-}
-#dashboard .dashboard-action-card::before{
-  width:36px !important;
-  height:36px !important;
-  border-radius:14px !important;
 }
 #dashboard .dashboard-progress-row{
   margin-top:12px !important;
@@ -7850,3 +7826,78 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
   .qp-question-v103{font-size:16px}
 }
 /* ============ SHIROHA_CLOUD_V103 快速练习 END ============ */
+
+/* ============ SHIROHA_CLOUD_V103 before 排版快速练习（原样集成） ============ */
+.qp-before-shell{
+  --accent:#1f7a68;
+  --accent-soft:#e7f3ef;
+  --ink:#1f2933;
+  --line:rgba(31,41,51,.12);
+  --muted:#6b7280;
+  --success:#276e4a;
+  --danger:#be3b45;
+  --panel:#faf9f5;
+  --panel-soft:#f4f1ea;
+  --shadow:0 10px 30px rgba(31,41,51,.06);
+  width:min(100%,760px);
+  margin:0 auto;
+  display:grid;
+  gap:14px;
+  color:var(--ink)
+}
+.qp-before-shell .subject-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:10px;padding:10px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(255,255,255,.78);box-shadow:var(--shadow)}
+.qp-before-shell .subject-switcher,.qp-before-shell .chapter-switcher{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;width:100%;color:var(--muted);font-size:.9rem;font-weight:800}
+.qp-before-shell .subject-switcher select,.qp-before-shell .chapter-switcher select{min-width:0;min-height:44px;width:100%;border:1px solid var(--line);border-radius:8px;padding:0 12px;color:var(--ink);background:#fff}
+.qp-before-shell .stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.qp-before-shell .stat-card{min-width:0;padding:12px 10px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(255,255,255,.78);box-shadow:var(--shadow)}
+.qp-before-shell .stat-card span{display:block;color:var(--muted);font-size:.75rem}
+.qp-before-shell .stat-card strong{display:block;margin-top:4px;font-size:1.5rem;line-height:1;color:var(--ink)}
+.qp-before-shell .toolbar,.qp-before-shell .bottom-actions{display:flex;align-items:center;gap:10px}
+.qp-before-shell .toolbar{justify-content:space-between}
+.qp-before-shell .mode-tabs{display:inline-grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;width:min(100%,390px);padding:4px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(255,255,255,.78)}
+.qp-before-shell .mode-tab,.qp-before-shell .primary-button,.qp-before-shell .secondary-button,.qp-before-shell .icon-button{border:0;border-radius:8px;cursor:pointer}
+.qp-before-shell .mode-tab{min-height:38px;color:var(--muted);background:transparent;font-weight:700}
+.qp-before-shell .mode-tab.is-active{color:#fff;background:var(--accent)}
+.qp-before-shell .question-panel{padding:18px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(255,255,255,.9);box-shadow:var(--shadow);touch-action:pan-y}
+.qp-before-shell .question-meta,.qp-before-shell .answer-line{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.86rem;font-weight:700}
+.qp-before-shell .question-meta span:first-child{min-width:0;overflow-wrap:anywhere}
+.qp-before-shell .progress-track{height:8px;margin:12px 0 18px;overflow:hidden;border-radius:999px;background:#ebe6da}
+.qp-before-shell .progress-bar{width:0%;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),#83a93f);transition:width 180ms ease}
+.qp-before-shell .jump-control{display:grid;gap:8px;margin:-4px 0 18px}
+.qp-before-shell .jump-control input[type="range"]{width:100%;accent-color:var(--accent)}
+.qp-before-shell .question-heading{display:grid;gap:10px;margin-bottom:18px}
+.qp-before-shell .question-heading h2{margin:0;font-size:1.18rem;line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.qp-before-shell .options{display:grid;gap:10px}
+.qp-before-shell .option-button{display:grid;grid-template-columns:36px 1fr;align-items:start;gap:10px;width:100%;min-height:54px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff;text-align:left;font-size:15px}
+.qp-before-shell .option-button:disabled{opacity:1}
+.qp-before-shell .option-button.is-selected{border-color:var(--accent);background:var(--accent-soft)}
+.qp-before-shell .option-button.is-correct{border-color:rgba(39,118,74,.7);background:#e9f6ec}
+.qp-before-shell .option-button.is-wrong{border-color:rgba(190,59,69,.68);background:#fbebed}
+.qp-before-shell .option-button.is-correct .option-key{color:#fff;background:var(--success)}
+.qp-before-shell .option-button.is-wrong .option-key{color:#fff;background:var(--danger)}
+.qp-before-shell .option-key{display:grid;place-items:center;width:32px;height:32px;border-radius:999px;background:#eef2f5;font-weight:800;color:var(--ink)}
+.qp-before-shell .option-text{min-width:0;padding-top:4px;line-height:1.45;overflow-wrap:anywhere}
+.qp-before-shell .submit-button{width:100%;margin-top:14px}
+.qp-before-shell .answer-panel{margin-top:16px;padding:14px;border-radius:8px;background:var(--panel-soft)}
+.qp-before-shell .answer-panel p{margin:8px 0 0;color:#334155;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.qp-before-shell .bottom-actions{grid-template-columns:1fr 1fr 1fr;padding:8px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(251,250,246,.9)}
+.qp-before-shell .bottom-actions button{flex:1 1 0;min-width:0}
+.qp-before-shell .primary-button{min-height:50px;padding:0 20px;color:#fff;background:var(--accent);font-weight:800;box-shadow:0 12px 26px rgba(31,122,104,.24)}
+.qp-before-shell .secondary-button{min-height:46px;padding:0 16px;border:1px solid var(--line);color:var(--ink);background:rgba(255,255,255,.84);font-weight:700}
+.qp-before-shell .icon-button{display:grid;place-items:center;width:44px;height:44px;flex:0 0 auto;color:var(--ink);background:rgba(255,255,255,.82);border:1px solid rgba(31,41,51,.08)}
+.qp-before-shell .icon-button span{font-size:1.35rem;line-height:1}
+.answer-card-item{min-width:0;min-height:42px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff;cursor:pointer;font-weight:800}
+.answer-card-item.is-current{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,122,104,.14)}
+.answer-card-item.is-correct{border-color:rgba(39,118,74,.7);color:#17603a;background:#e9f6ec}
+.answer-card-item.is-wrong{border-color:rgba(190,59,69,.68);color:#9d2f2f;background:#fbebed}
+.answer-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px;max-height:min(62vh,520px);overflow:auto}
+.answer-card-dialog{width:min(calc(100vw - 28px),720px);border:0;border-radius:8px;padding:0;color:var(--ink);background:var(--panel);box-shadow:var(--shadow)}
+.answer-card-dialog::backdrop{background:rgba(22,28,36,.42)}
+.answer-card-dialog form{display:grid;gap:14px;padding:18px}
+.answer-card-dialog .dialog-header{display:flex;align-items:center;justify-content:space-between}
+.answer-card-dialog .dialog-header h2{margin:0;font-size:1.1rem}
+@media (max-width:640px){
+  .qp-before-shell .subject-row{grid-template-columns:1fr}
+  .qp-before-shell .bottom-actions{position:sticky;bottom:10px;z-index:5;background:rgba(251,250,246,.94);backdrop-filter:blur(6px)}
+}
+/* ============ SHIROHA_CLOUD_V103 before 排版 END ============ */
