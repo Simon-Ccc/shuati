@@ -849,6 +849,8 @@ function renderBankSelect(){
     lbSel.innerHTML=state.banks.map(b=>`<option value="${esc(b.id)}">${esc(bankPathLabelV58(b))}</option>`).join('');
     if(prev)lbSel.value=prev;else lbSel.value=old||state.activeBankId;
   }
+  const qpb=$('#quick-practice-bank-v103');
+  if(qpb){const b=activeBank();qpb.textContent=b?(b.name+' · '+b.questions.length+'题'):'暂无题库';}
 }
 function renderMergeSelect(){
   const sel=$('#merge-bank-select');if(!sel)return;
@@ -7293,7 +7295,21 @@ function fmtBankCheckTimeV103(ts){
   const hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
   return hm;
 }
-function init(){upgradeState();ensureAiImportStateV99();ensureDefaultBank();seedBanksFromIndexV1();registerCloudBridgeV102();if(window.ShirohaCloud&&window.ShirohaCloud.initCloudV102)window.ShirohaCloud.initCloudV102();ensureBankGroupUiV58();bindNav();bindEvents();bindMultiBlankEditorV58914();bindV25ToV28Events();ensureV25ToV28Panels();setupSidebarCollapse();renderBankSelect();renderAll();setupEnhancedDataToolsV23();updateShellLayoutByView();syncHomeVersionPromptV586();setTimeout(syncHomeVersionPromptV586,80);setTimeout(syncHomeVersionPromptV586,300);}
+// 首页快速练习：直接按当前题库开练（随机20 / 顺序20 / 错题重练20），复用 startPractice
+function bindQuickPracticeV103(){
+  const quick=(order,source)=>{
+    const s=$('#practice-source');if(s)s.value=source||'all';
+    const o=$('#practice-order');if(o)o.value=order;
+    const l=$('#practice-limit');if(l)l.value='custom';
+    const c=$('#practice-custom-count');if(c)c.value='20';
+    startPractice({type:PRACTICE_SCOPE_BANK_V8916,value:activeBank().id});
+    const nav=document.querySelector('.nav[data-view="practice"]');if(nav)nav.click();
+  };
+  const r=$('#quick-practice-random-v103');if(r)r.onclick=()=>quick('random','all');
+  const s=$('#quick-practice-sequence-v103');if(s)s.onclick=()=>quick('sequence','all');
+  const w=$('#quick-practice-wrong-v103');if(w)w.onclick=()=>quick('random','wrong');
+}
+function init(){upgradeState();ensureAiImportStateV99();ensureDefaultBank();seedBanksFromIndexV1();registerCloudBridgeV102();if(window.ShirohaCloud&&window.ShirohaCloud.initCloudV102)window.ShirohaCloud.initCloudV102();ensureBankGroupUiV58();bindNav();bindEvents();bindQuickPracticeV103();bindMultiBlankEditorV58914();bindV25ToV28Events();ensureV25ToV28Panels();setupSidebarCollapse();renderBankSelect();renderAll();setupEnhancedDataToolsV23();updateShellLayoutByView();syncHomeVersionPromptV586();setTimeout(syncHomeVersionPromptV586,80);setTimeout(syncHomeVersionPromptV586,300);}
 function registerCloudBridgeV102(){
   try{
     if(!window.ShirohaCloud||!window.ShirohaCloud.registerBridgeV102)return;
@@ -7356,7 +7372,7 @@ function upgradeState(){
   ensurePracticeScopeV8916();
 }
 function serializeState(){return JSON.stringify({...state,schemaVersion:CURRENT_SCHEMA_VERSION,favorites:state.favorites||{}})}
-function renderAll(){ensureBankGroupUiV58();ensurePracticeScopeV8916();updateAiConnectionPillV99();syncAiImportActionV99();syncAiPreviewToolsV991();renderStats();renderBankSelect();renderMergeSelect();renderBankList();renderBankPreview();renderWrongBook();renderFavoritesPageV596();renderRecords();renderBankInputs();renderBuiltInPanelV252();renderPracticeScopeUiV8916();if(typeof renderExportBankSelectorV23==='function')renderExportBankSelectorV23();renderImportTargetBankOptionsV59();syncImportAppendUiV59();syncHomeVersionPromptV586();syncPracticeStartUiV58916(true);}
+function renderAll(){ensureBankGroupUiV58();ensurePracticeScopeV8916();updateAiConnectionPillV99();syncAiImportActionV99();syncAiPreviewToolsV991();renderStats();renderBankSelect();renderMergeSelect();renderBankList();renderBankPreview();renderWrongBook();renderFavoritesPageV596();renderRecords();renderBankInputs();renderBuiltInPanelV252();renderPracticeScopeUiV8916();if(typeof renderExportBankSelectorV23==='function')renderExportBankSelectorV23();renderImportTargetBankOptionsV59();syncImportAppendUiV59();syncHomeVersionPromptV586();syncPracticeStartUiV58916(true);try{if(window.ShirohaCloud&&window.ShirohaCloud.syncAnnouncementBannerV103)window.ShirohaCloud.syncAnnouncementBannerV103()}catch(_){};}
 function bindV25ToV28Events(){
   ['#load-built-in-bank-btn','#load-built-in-bank-btn-banks'].forEach(sel=>{const btn=$(sel);if(btn)btn.onclick=()=>loadBuiltInBankV252();});
 }

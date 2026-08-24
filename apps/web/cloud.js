@@ -104,6 +104,7 @@
     const lbSel=$('leaderboard-bank-select-v102');if(lbSel)lbSel.onchange=()=>{if(lbSel.value)renderLeaderboardV102()};
     const refresh=$('leaderboard-refresh-btn-v102');if(refresh)refresh.onclick=()=>renderLeaderboardV102();
     const adminClose=$('cloud-admin-close-v102');if(adminClose)adminClose.onclick=()=>$('cloud-admin-modal').classList.add('hidden');
+    bindAnnouncementBannerV103();
     window.addEventListener('beforeunload',()=>{try{flushProgressV102(true)}catch(_){}});
   }
   // 全站门禁：未登录时显示全屏登录层，登录后隐藏
@@ -317,6 +318,42 @@
       const {data}=await c.from('admins').select('user_id').eq('user_id',currentUser.id).limit(1);
       isAdmin=!!(data&&data.length);adminChecked=true;
     }catch(e){warnDevV102('refreshAdminFlagV102 failed',e)}
+  }
+
+  // ================= 公告 =================
+  const ANN_CLOSED_KEY='shiroha_quiz_announcement_closed_v103';
+  let bannerAnnouncementsV103=[];
+  function readAnnClosedV103(){try{const raw=localStorage.getItem(ANN_CLOSED_KEY);if(raw){const a=JSON.parse(raw);return Array.isArray(a)?a:[]}}catch(_){}return[]}
+  function writeAnnClosedV103(ids){try{localStorage.setItem(ANN_CLOSED_KEY,JSON.stringify(ids.slice(-20)))}catch(_){}}
+  async function syncAnnouncementBannerV103(){
+    const banner=$('announcement-banner-v103');
+    if(!banner){return}
+    const hide=()=>{banner.classList.add('hidden');return};
+    if(!currentUser||!cloudReadyV102()){hide();return}
+    const c=cloudClientV102();if(!c){hide();return}
+    try{
+      const {data,error}=await c.from('announcements').select('id,title,content,created_at').eq('active',true).order('created_at',{ascending:false}).limit(10);
+      if(error)throw error;
+      const items=(data||[]).filter(x=>x&&x.content);
+      bannerAnnouncementsV103=items;
+      if(!items.length){hide();return}
+      const closed=readAnnClosedV103();
+      const allClosed=items.every(x=>closed.includes(x.id));
+      if(allClosed){hide();return}
+      const textEl=$('announcement-text-v103');
+      if(textEl){
+        textEl.textContent=items.map(x=>`【${x.title||'公告'}】${x.content}`).join('　｜　');
+      }
+      banner.classList.remove('hidden');
+    }catch(e){warnDevV102('syncAnnouncementBannerV103 failed',e);hide()}
+  }
+  function bindAnnouncementBannerV103(){
+    const close=$('announcement-close-v103');if(!close)return;
+    close.onclick=()=>{
+      const ids=bannerAnnouncementsV103.map(x=>x.id).filter(Boolean);
+      if(ids.length){const cur=readAnnClosedV103();writeAnnClosedV103([...new Set([...cur,...ids])])}
+      const banner=$('announcement-banner-v103');if(banner)banner.classList.add('hidden');
+    };
   }
 
   // ================= 班级 =================
@@ -539,6 +576,45 @@
     });
     panel.querySelectorAll('[data-admin-recode-v102]').forEach(b=>b.onclick=()=>adminRegenCodeV102(b.dataset.adminRecodeV102));
     panel.querySelectorAll('[data-admin-disband-v102]').forEach(b=>b.onclick=()=>adminDisbandV102(b.dataset.adminDisbandV102));
+    await renderAnnouncementsAdminV102(panel);
+  }
+  // 公告管理（仅管理员面板内）
+  async function renderAnnouncementsAdminV102(panel){
+    const c=cloudClientV102();if(!c)return;
+    let ann=null;
+    try{
+      const {data}=await c.from('announcements').select('id,title,content,created_at').order('created_at',{ascending:false}).limit(20);
+      ann=data||[];
+    }catch(e){warnDevV102('加载公告失败',e);ann=[]}
+    const div=document.createElement('div');
+    div.className='cloud-ann-admin-v103';
+    div.innerHTML=`<div class="section-head"><div><p class="kicker">Announcement</p><h3>公告管理</h3><p class="muted">发布公告后，所有登录用户的首页顶部会滚动显示公告。</p></div></div>
+      <div class="cloud-ann-form-v103">
+        <label>标题<input id="cloud-ann-title-v103" placeholder="例如：本周五考试安排" /></label>
+        <label>内容<textarea id="cloud-ann-content-v103" rows="2" placeholder="公告内容，将滚动显示在首页"></textarea></label>
+      </div>
+      <div class="actions"><button id="cloud-ann-publish-v103" class="primary" type="button">发布公告</button></div>
+      <div class="cloud-ann-list-v103">
+        ${(ann||[]).map(a=>`<div class="cloud-ann-item-v103"><div><b>${escV102(a.title||'公告')}</b><span class="muted">${fmtCloudTimeV102(a.created_at)}</span></div><p>${escV102(String(a.content||'').slice(0,80))}</p><div class="row-actions"><button class="ghost danger mini-btn" data-ann-del-v103="${escV102(a.id)}" type="button">删除</button></div></div>`).join('')||'<p class="muted">还没有公告。</p>'}
+      </div>`;
+    panel.appendChild(div);
+    const pub=$('cloud-ann-publish-v103');
+    if(pub)pub.onclick=async()=>{
+      const title=($('cloud-ann-title-v103')||{}).value||'';
+      const content=($('cloud-ann-content-v103')||{}).value||'';
+      if(!content.trim()){cloudToastV102('公告内容不能为空。','warn');return}
+      const {error}=await c.from('announcements').insert({title,content,created_by:currentUser.id});
+      if(error){cloudToastV102(cloudErrorTextV102(error),'danger');return}
+      cloudToastV102('公告已发布。','ok');
+      await renderLeaderboardV102();
+    };
+    div.querySelectorAll('[data-ann-del-v103]').forEach(b=>b.onclick=async()=>{
+      if(!confirm('删除该公告？删除后首页横幅不再显示。'))return;
+      const {error}=await c.from('announcements').delete().eq('id',b.dataset.annDelV103);
+      if(error){cloudToastV102(cloudErrorTextV102(error),'danger');return}
+      cloudToastV102('公告已删除。','ok');
+      await renderLeaderboardV102();
+    });
   }
   async function adminKickV102(gid,uid){
     if(!confirm('确定将该成员踢出班级？'))return;
@@ -657,6 +733,7 @@
     onLocalStateSavedV102,
     queueProgressV102,
     flushOnExitV102,
-    onLeaderboardViewV102
+    onLeaderboardViewV102,
+    syncAnnouncementBannerV103
   };
 })();
