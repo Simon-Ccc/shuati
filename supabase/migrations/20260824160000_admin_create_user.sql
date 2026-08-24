@@ -1,10 +1,18 @@
 -- ============================================================
--- 修复：admin_create_user 报 "function gen_salt(unknown) does not exist"
--- 原因：pgcrypto 的 gen_salt/crypt 装在 extensions schema，
---       而函数 set search_path = public 找不到它们。
--- 修复：改为 schema 限定调用 extensions.gen_salt / extensions.crypt
+-- 关闭公开注册后：账号只能由管理员创建（姓名 + 密码）
+-- 登录用「姓名 + 密码」，排行榜直接显示姓名
+--
+-- 安全模型：
+--  - security definer：函数以 postgres 身份执行，可写 auth.users
+--  - 函数内部校验调用者必须是 public.admins 表成员，非管理员直接报错
+--  - 前端仅用 anon key 调 RPC，service_role key 不落前端
+--  - 姓名唯一：重名时拒绝创建，老师加序号区分（如 张三2）
+--  - email 由姓名派生（md5），不可猜、不对外展示；学生登录时按姓名反查
+--  - 创建即确认（email_confirmed_at=now()），学生拿到账号直接登录
+--  - 插入 auth.users 会触发 on_auth_user_created → 自动建 profiles 行
 -- ============================================================
 
+-- 1) 管理员创建账号（姓名 + 密码）
 create or replace function public.admin_create_user(
   p_name text,
   p_password text
@@ -41,7 +49,7 @@ begin
     '00000000-0000-0000-0000-000000000000',
     gen_random_uuid(),
     'authenticated', 'authenticated', v_email,
-    extensions.crypt(p_password, extensions.gen_salt('bf')),
+    crypt(p_password, gen_salt('bf')),
     now(),
     jsonb_build_object('display_name', v_name, 'provider', 'email'),
     now(), now()
@@ -56,3 +64,17 @@ begin
 end;
 $$;
 grant execute on function public.admin_create_user(text, text) to authenticated;
+
+-- 2) 按姓名反查登录邮箱（登录时：姓名+密码 → 查到 email → 密码登录）
+--    仅返回精确匹配姓名的 email；找不到返回空行
+create or replace function public.get_user_email_by_name(p_name text)
+returns table (email text)
+language sql security definer set search_path = public
+as $$
+  select u.email
+  from auth.users u
+  where u.raw_user_meta_data->>'display_name' = trim(p_name)
+    and u.deleted_at is null
+  limit 1;
+$$;
+grant execute on function public.get_user_email_by_name(text) to authenticated;

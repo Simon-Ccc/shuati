@@ -227,7 +227,7 @@ begin
     instance_id, id, aud, role, email, encrypted_password,
     email_confirmed_at, raw_user_meta_data, created_at, updated_at
   ) values (
-    '00000000-0000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000000',
     gen_random_uuid(),
     'authenticated', 'authenticated', v_email,
     extensions.crypt(p_password, extensions.gen_salt('bf')),

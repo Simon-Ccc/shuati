@@ -1,8 +1,8 @@
 -- ============================================================
--- 修复：admin_create_user 报 "function gen_salt(unknown) does not exist"
--- 原因：pgcrypto 的 gen_salt/crypt 装在 extensions schema，
---       而函数 set search_path = public 找不到它们。
--- 修复：改为 schema 限定调用 extensions.gen_salt / extensions.crypt
+-- 修复：admin_create_user 报 "invalid input syntax for type uuid"
+-- 原因：instance_id 的零 UUID 误写成 8-4-4-4-4-12（5 段，41 字符），
+--       标准 UUID 是 8-4-4-4-12（4 个短横线，36 字符）。
+-- 修复：CREATE OR REPLACE 正确版本
 -- ============================================================
 
 create or replace function public.admin_create_user(
