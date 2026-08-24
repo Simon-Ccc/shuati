@@ -737,8 +737,8 @@ body.practice-focus .view{
 body.practice-focus #practice.view{
   display:block!important;
   min-height:100vh;
-  padding:18px;
-  background:linear-gradient(180deg,#f8fbff,#eef4ff)
+  padding:max(18px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));
+  background:linear-gradient(160deg,rgba(31,122,104,.12),transparent 34rem),linear-gradient(24deg,rgba(191,91,44,.1),transparent 36rem),#fbfaf6
 }
 body.practice-focus #practice>.card:first-child{
   display:none!important
@@ -7843,7 +7843,8 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
   margin:0 auto;
   display:grid;
   gap:14px;
-  color:var(--ink)
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","Noto Sans CJK SC",sans-serif
 }
 .qp-before-shell .subject-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:10px;padding:10px;border:1px solid rgba(31,41,51,.08);border-radius:8px;background:rgba(255,255,255,.78);box-shadow:var(--shadow)}
 .qp-before-shell .subject-switcher,.qp-before-shell .chapter-switcher{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;width:100%;color:var(--muted);font-size:.9rem;font-weight:800}
@@ -7866,7 +7867,7 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 .qp-before-shell .jump-control{display:grid;gap:8px;margin:-4px 0 18px}
 .qp-before-shell .jump-control input[type="range"]{width:100%;accent-color:var(--accent)}
 .qp-before-shell .question-heading{display:grid;gap:10px;margin-bottom:18px}
-.qp-before-shell .question-heading h2{margin:0;font-size:1.18rem;line-height:1.65;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.qp-before-shell .question-heading h2{margin:0;font-size:1.32rem;line-height:1.45;letter-spacing:0;color:var(--ink);white-space:pre-wrap;word-break:break-word}
 .qp-before-shell .options{display:grid;gap:10px}
 .qp-before-shell .option-button{display:grid;grid-template-columns:36px 1fr;align-items:start;gap:10px;width:100%;min-height:54px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff;text-align:left;font-size:15px}
 .qp-before-shell .option-button:disabled{opacity:1}
@@ -7909,5 +7910,14 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 @media (max-width:640px){
   .qp-before-shell .subject-row{grid-template-columns:1fr}
   .qp-before-shell .bottom-actions{position:sticky;bottom:10px;z-index:5;background:rgba(251,250,246,.94);backdrop-filter:blur(6px)}
+}
+/* ≤420px 手机端适配（与 before 原版一致） */
+@media (max-width:420px){
+  body.practice-focus #practice.view{padding:max(18px,env(safe-area-inset-top)) 12px max(22px,env(safe-area-inset-bottom))}
+  .qp-before-shell .question-panel{padding:15px}
+  .qp-before-shell .toolbar{align-items:stretch;flex-direction:column}
+  .qp-before-shell .mode-tabs{width:100%}
+  .qp-before-shell .bottom-actions{gap:6px}
+  .qp-before-shell .secondary-button,.qp-before-shell .primary-button{padding-inline:10px}
 }
 /* ============ SHIROHA_CLOUD_V103 before 排版 END ============ */
