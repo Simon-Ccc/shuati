@@ -63,6 +63,7 @@
     if(/User already registered/i.test(s))return'该邮箱已注册，请直接登录';
     if(/Email not confirmed/i.test(s))return'请先到邮箱点击确认链接，再回来登录';
     if(/invite|邀请码/i.test(s))return'邀请码不存在或已失效';
+    if(/rate limit|限速|429/i.test(s))return'操作太频繁：邮件服务限速，请稍后几分钟再试';
     if(/network|fetch|Failed to fetch|TypeError/i.test(s))return'网络不可用，已保持本地模式';
     if(/already been used|重复/i.test(s))return'该名称已被使用';
     return s||'操作失败，请稍后重试';
@@ -158,10 +159,18 @@
     try{
       if(loginMode==='register'){
         const nickname=($('cloud-nickname-v102')||{}).value||'';
-        const {error}=await c.auth.signUp({email,password,options:{data:{display_name:nickname}}});
+        const {data,error}=await c.auth.signUp({email,password,options:{data:{display_name:nickname}}});
         if(error)throw error;
-        setCloudModalStatusV102('注册成功！确认邮件已发送到 '+escV102(email)+'，请先到邮箱点击确认链接，再回来登录。','ok');
-        loginMode='login';cloudToggleModeV102(true);
+        if(data&&data.session){/* 邮箱确认已关闭：注册即登录 */
+          currentUser=data.session.user;
+          switchAccountV103();
+          hideCloudGateV103();renderCloudAuthUiV102();
+          setCloudModalStatusV102('注册成功，已自动登录！','ok');
+          syncNowV102();
+        }else{
+          setCloudModalStatusV102('注册成功！确认邮件已发送到 '+escV102(email)+'，请先到邮箱点击确认链接，再回来登录。','ok');
+          loginMode='login';cloudToggleModeV102(true);
+        }
       }else{
         const {data,error}=await c.auth.signInWithPassword({email,password});
         if(error)throw error;
