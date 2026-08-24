@@ -3,6 +3,7 @@
     "id": "local-anatomy-full",
     "name": "局解_含解析",
     "count": 623,
+    "version": 1,
     "file": "data/local-anatomy-full.json",
     "description": "默认局部解剖题库，含单选题答案与解析。"
   },
@@ -10,6 +11,7 @@
     "id": "pathology-2a",
     "name": "病理学2A",
     "count": 300,
+    "version": 1,
     "file": "data/pathology-2a.json",
     "description": "锦州医科大学期末试卷 病理学2A，300 道单选题（A1 型）。"
   },
@@ -17,6 +19,7 @@
     "id": "pathology-3a",
     "name": "病理学3A",
     "count": 300,
+    "version": 1,
     "file": "data/pathology-3a.json",
     "description": "锦州医科大学期末试卷 病理学3A，含 A1/A2 单选与 B1 共用备选答案题。"
   },
@@ -24,6 +27,7 @@
     "id": "pathology-a",
     "name": "病理A",
     "count": 300,
+    "version": 1,
     "file": "data/pathology-a.json",
     "description": "锦州医科大学期末试卷 病理A，300 道单选题（A1 型）。"
   }

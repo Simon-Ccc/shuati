@@ -7197,6 +7197,11 @@ function deleteBanksV32(ids){
   if(!confirm(`确定删除 ${targets.length} 个题库：${preview}？删除后不会影响已导出的备份，但本机数据不可恢复。`))return;
   const delIds=new Set(targets.map(b=>b.id));
   state.banks=state.banks.filter(b=>!delIds.has(b.id));
+  // 记录被删除的内置题库（种子同步时不再自动添加回来）
+  targets.forEach(b=>{
+    if(b.id==='default-local-anatomy'){if(!state.settings.deletedBuiltinBanksV103.includes('local-anatomy-full'))state.settings.deletedBuiltinBanksV103.push('local-anatomy-full');}
+    else if(String(b.id).startsWith('builtin-')){const rawId=String(b.id).slice('builtin-'.length);if(!state.settings.deletedBuiltinBanksV103.includes(rawId))state.settings.deletedBuiltinBanksV103.push(rawId);}
+  });
   delIds.forEach(id=>{delete state.wrongBook[id];if(state.favorites)delete state.favorites[id];if(state.crossPlatformMeta&&state.crossPlatformMeta.favoriteQuestions)delete state.crossPlatformMeta.favoriteQuestions[id];exportBankSelectedV23.delete(id)});
   if(!state.banks.length){state.activeBankId='';state.settings={...(state.settings||{}),suppressDefaultBank:true};}
   else if(!state.banks.some(b=>b.id===state.activeBankId))state.activeBankId=state.banks[0]?.id||'';
@@ -7315,6 +7320,9 @@ function upgradeState(){
   state.settings.aiImportV99=normalizeAiConfigV99(state.settings.aiImportV99);
   state.settings.practiceProgressV58916=state.settings.practiceProgressV58916&&typeof state.settings.practiceProgressV58916==='object'&&!Array.isArray(state.settings.practiceProgressV58916)?state.settings.practiceProgressV58916:{};
   state.settings.cloudSyncV102=state.settings.cloudSyncV102&&typeof state.settings.cloudSyncV102==='object'&&!Array.isArray(state.settings.cloudSyncV102)?state.settings.cloudSyncV102:{lastSyncAt:0,lastRemoteUpdatedAt:0};
+  state.settings.banksManifestV103=state.settings.banksManifestV103&&typeof state.settings.banksManifestV103==='object'&&!Array.isArray(state.settings.banksManifestV103)?state.settings.banksManifestV103:{items:{}};
+  if(!state.settings.banksManifestV103.items||typeof state.settings.banksManifestV103.items!=='object')state.settings.banksManifestV103.items={};
+  state.settings.deletedBuiltinBanksV103=Array.isArray(state.settings.deletedBuiltinBanksV103)?state.settings.deletedBuiltinBanksV103:[];
   state.favorites=state.favorites&&typeof state.favorites==='object'?state.favorites:{};
   state.crossPlatformMeta=state.crossPlatformMeta&&typeof state.crossPlatformMeta==='object'?state.crossPlatformMeta:{favoriteQuestions:{}};
   state.crossPlatformMeta.favoriteQuestions=state.crossPlatformMeta.favoriteQuestions&&typeof state.crossPlatformMeta.favoriteQuestions==='object'?state.crossPlatformMeta.favoriteQuestions:{};
@@ -7360,32 +7368,50 @@ async function fetchJsonLocalV252(url){
     return await new Promise((resolve,reject)=>{try{const xhr=new XMLHttpRequest();xhr.open('GET',url,true);xhr.overrideMimeType('application/json;charset=utf-8');xhr.onload=()=>{try{if(xhr.status===0||xhr.status>=200&&xhr.status<300)resolve(JSON.parse(xhr.responseText));else reject(new Error('XHR '+xhr.status))}catch(e){reject(e)}};xhr.onerror=()=>reject(fetchError);xhr.send()}catch(e){reject(fetchError||e)}});
   }
 }
-// 首次启动时，把 banks-index.json 中列出的内置题库自动注册进题库列表（幂等）。
-// 注册完成后写入 settings.seededIndexBanksV2 标记；之后用户在界面删除的题库不会复活。
+// 每次启动同步 banks-index.json 中列出的内置题库（版本检测自动更新）：
+//   - 新题库 → 自动添加；已有题库 version 更新 → 拉取新内容替换（保留 bank 记录，错题/收藏引用旧题 id 不渲染不报错）
+//   - 用户在界面删除过的内置题库记入 settings.deletedBuiltinBanksV103，不再自动添加
+//   - 每次启动都检查，方便"上传新题库 → 同学刷新即更新"
 // 索引优先读 data/banks-index.json（权威来源），仅当 HTTP 获取失败时（如 file:// 离线）退回 window.questionBankIndex。
 async function seedBanksFromIndexV1(){
   try{
-    if(state.settings&&state.settings.seededIndexBanksV2)return;
     let index=null;
     try{index=await fetchJsonLocalV252('data/banks-index.json')}catch(e){warnDev('读取 banks-index.json 失败，退回 question-bank.js 索引。',e);}
     if(!Array.isArray(index)||!index.length)index=window.questionBankIndex||[];
     if(!Array.isArray(index)||!index.length)return;
+    const manifest=state.settings.banksManifestV103&&typeof state.settings.banksManifestV103==='object'?state.settings.banksManifestV103:{};
+    const items=manifest.items&&typeof manifest.items==='object'?manifest.items:{};
+    const deleted=Array.isArray(state.settings.deletedBuiltinBanksV103)?state.settings.deletedBuiltinBanksV103:[];
     let changed=false;
     for(const item of index){
       const bankId=item.id==='local-anatomy-full'?'default-local-anatomy':'builtin-'+item.id;
+      if(deleted.includes(item.id))continue;
+      const ver=Number(item.version||1);
+      const localVer=Number(items[item.id]||0);
       const existing=state.banks.find(b=>b.id===bankId);
-      if(existing&&(!existing.builtInLazy||(existing.questions||[]).length>0))continue;
+      // 已有完整题库且版本未变 → 跳过；空惰性题库（局解待加载）或版本更新 → 拉取
+      if(existing&&(existing.questions||[]).length>0&&ver<=localVer)continue;
       let data=null;
-      try{data=await fetchJsonLocalV252(item.file||'')}catch(e){warnDev('种子题库加载失败：'+bankId,e);continue;}
+      try{data=await fetchJsonLocalV252(item.file||'')}catch(e){warnDev('内置题库加载失败：'+bankId,e);continue;}
       const questions=(data&&data.questions||[]).map((q,i)=>normalizeQuestion(q,i)).filter(q=>q.question);
       if(!questions.length)continue;
-      const bank={id:bankId,name:item.name||data.meta?.title||'内置题库',groupName:'',createdAt:now(),updatedAt:now(),questions,builtInLazy:false};
-      const old=state.banks.findIndex(b=>b.id===bankId||b.builtInLazy);
-      if(old>=0)state.banks[old]=bank;else state.banks.push(bank);
+      if(existing){
+        // 版本更新：替换题目内容，保留 bank 记录与用户分组
+        existing.name=item.name||data.meta?.title||existing.name;
+        existing.questions=questions;
+        existing.updatedAt=now();
+        existing.builtInLazy=false;
+      }else{
+        const bank={id:bankId,name:item.name||data.meta?.title||'内置题库',groupName:'',createdAt:now(),updatedAt:now(),questions,builtInLazy:false};
+        const old=state.banks.findIndex(b=>b.id===bankId||b.builtInLazy);
+        if(old>=0)state.banks[old]=bank;else state.banks.push(bank);
+      }
+      items[item.id]=ver;
       changed=true;
     }
+    manifest.items=items;
+    state.settings={...(state.settings||{}),banksManifestV103:manifest};
     if(changed){
-      state.settings={...(state.settings||{}),seededIndexBanksV2:true};
       saveSilent();renderAll();
     }
   }catch(e){warnDev('seedBanksFromIndexV1 failed',e);}

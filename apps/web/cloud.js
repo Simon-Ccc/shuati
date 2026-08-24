@@ -94,11 +94,10 @@
     };
   }
 
-  // ================= 登录 UI =================
+  // ================= 登录 UI / 全站门禁 =================
   function bindCloudDomV102(){
     const btn=$('cloud-login-btn-v102');
-    if(btn)btn.onclick=()=>openCloudModalV102();
-    const close=$('cloud-modal-close-v102');if(close)close.onclick=closeCloudModalV102;
+    if(btn)btn.onclick=showCloudGateV103;
     const toggle=$('cloud-toggle-mode-v102');if(toggle)toggle.onclick=cloudToggleModeV102;
     const submit=$('cloud-submit-v102');if(submit)submit.onclick=cloudSubmitV102;
     const forgot=$('cloud-forgot-v102');if(forgot)forgot.onclick=cloudForgotV102;
@@ -107,16 +106,24 @@
     const adminClose=$('cloud-admin-close-v102');if(adminClose)adminClose.onclick=()=>$('cloud-admin-modal').classList.add('hidden');
     window.addEventListener('beforeunload',()=>{try{flushProgressV102(true)}catch(_){}});
   }
-  function openCloudModalV102(){
-    if(!cfgOkV102()){cloudToastV102('云端未配置：请在 cloud-config.js 填入 Supabase anon key。','warn');return}
-    if(!window.supabase){cloudToastV102('云端组件缺失：libs/supabase.min.js 未加载。','warn');return}
+  // 全站门禁：未登录时显示全屏登录层，登录后隐藏
+  function showCloudGateV103(){
+    const gate=$('cloud-gate-v103');if(gate)gate.classList.remove('hidden');
     loginMode=currentUser?'login':'login';
     cloudToggleModeV102(true);
-    const st=$('cloud-modal-status-v102');if(st)st.textContent=currentUser?'已登录：'+escV102(currentUser.email)+'。可在此退出登录。':'登录后：跨设备同步学习进度，同学互看排行榜。';
-    $('cloud-modal').classList.remove('hidden');
+    const st=$('cloud-modal-status-v102');if(st)st.textContent='登录后：数据保存在云端，跨设备同步，同学互看排行榜。';
     const email=$('cloud-email-v102');if(email){email.value=currentUser?currentUser.email:'';email.focus()}
+    setCloudGateStatusV103('');
   }
-  function closeCloudModalV102(){$('cloud-modal').classList.add('hidden');setCloudModalStatusV102('')}
+  function hideCloudGateV103(){
+    const gate=$('cloud-gate-v103');if(gate)gate.classList.add('hidden');
+    setCloudModalStatusV102('');
+  }
+  function setCloudGateStatusV103(msg,isErr){
+    const el=$('cloud-gate-status-v103');if(!el)return;
+    el.textContent=msg||'';
+    el.className='muted cloud-gate-cloud-status-v103'+(isErr?' is-err':'');
+  }
   function setCloudModalStatusV102(msg,type){
     const el=$('cloud-modal-status-v102');if(!el)return;
     el.textContent=msg||'';
@@ -150,7 +157,7 @@
         const {data,error}=await c.auth.signInWithPassword({email,password});
         if(error)throw error;
         if(data&&data.session)currentUser=data.session.user;
-        closeCloudModalV102();renderCloudAuthUiV102();
+        hideCloudGateV103();renderCloudAuthUiV102();
         if(currentUser)syncNowV102();
       }
     }catch(e){setCloudModalStatusV102(cloudErrorTextV102(e),'danger')}
@@ -185,7 +192,7 @@
       btn.onclick=cloudSignOutV102;
     }else{
       btn.hidden=false;btn.textContent='登录 / 同步';
-      btn.onclick=openCloudModalV102;
+      btn.onclick=showCloudGateV103;
     }
     renderCloudPillV102();
     renderSettingsCloudCardV102();
@@ -612,31 +619,36 @@
     readMetaV102();
     bindCloudDomV102();
     if(!cfgOkV102()){
-      renderCloudAuthUiV102();
+      renderCloudAuthUiV102();showCloudGateV103();
+      setCloudGateStatusV103('云端未配置：请先在 cloud-config.js 填入 Supabase anon key。',true);
       return;
     }
     if(!window.supabase||!window.supabase.createClient){
-      renderCloudAuthUiV102();
+      renderCloudAuthUiV102();showCloudGateV103();
+      setCloudGateStatusV103('云端组件缺失：libs/supabase.min.js 未加载。',true);
       return;
     }
     const c=cloudClientV102();
-    if(!c){renderCloudAuthUiV102();return}
+    if(!c){renderCloudAuthUiV102();showCloudGateV103();setCloudGateStatusV103('网络不可用：请检查网络连接后刷新重试。',true);return}
     try{
       c.auth.getSession().then(({data})=>{
-        if(data&&data.session){currentUser=data.session.user;refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()})}
-        else renderCloudAuthUiV102();
-      }).catch(e=>{warnDevV102('getSession failed',e);renderCloudAuthUiV102()});
+        if(data&&data.session){currentUser=data.session.user;hideCloudGateV103();refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()})}
+        else {renderCloudAuthUiV102();showCloudGateV103()}
+      }).catch(e=>{warnDevV102('getSession failed',e);renderCloudAuthUiV102();showCloudGateV103()});
       authUnsub=c.auth.onAuthStateChange((event,session)=>{
         const wasUser=!!currentUser;
         currentUser=session?session.user:null;
         if(currentUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||!wasUser)){
+          hideCloudGateV103();
           refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()});
         }else if(!currentUser){
           isAdmin=false;adminChecked=false;renderCloudAuthUiV102();
-          if(event==='SIGNED_OUT'&&document.querySelector('#leaderboard.view.active'))renderLeaderboardV102();
+          if(event==='SIGNED_OUT'){
+            showCloudGateV103();switchViewV102('dashboard');
+          }
         }else{renderCloudAuthUiV102()}
       });
-    }catch(e){warnDevV102('initCloudV102 failed',e);renderCloudAuthUiV102()}
+    }catch(e){warnDevV102('initCloudV102 failed',e);renderCloudAuthUiV102();showCloudGateV103()}
   }
 
   window.ShirohaCloud={
