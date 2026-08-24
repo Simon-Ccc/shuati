@@ -31,7 +31,7 @@
       <button class="nav active" data-view="dashboard">首页</button>
       <button class="nav" data-view="import">导入题库</button>
       <button class="nav" data-view="banks">题库管理</button>
-      <button class="nav" data-view="practice">刷题练习</button>
+      <button class="nav" data-view="practice">快速练习</button>
       <button class="nav" data-view="exam">考试模式</button>
       <button class="nav" data-view="wrongbook">错题本</button>
       <button class="nav" data-view="favorites">收藏夹</button>
@@ -78,7 +78,7 @@
             </div>
             <div class="dashboard-action-grid" aria-label="首页快捷入口">
               <button type="button" class="dashboard-action-card blue" onclick="var n=document.querySelector('.nav[data-view=&quot;practice&quot;]');if(n)n.click();">
-                <span>开始刷题</span><small>顺序练习</small>
+                <span>快速练习</span><small>开刷当前题库</small>
               </button>
               <button type="button" class="dashboard-action-card green" onclick="var n=document.querySelector('.nav[data-view=&quot;import&quot;]');if(n)n.click();">
                 <span>导入题库</span><small>题库导入</small>
@@ -284,6 +284,48 @@ C. 判断题
       </section>
 
       <section id="practice" class="view">
+        <div class="card qp-card-v103">
+          <div class="section-head"><div><p class="kicker">Quick Practice</p><h2>快速练习</h2></div><div class="pill qp-position-v103" id="qp-position-v103">0 / 0</div></div>
+          <div class="qp-picker-row-v103">
+            <label>题库<select id="qp-subject-v103"></select></label>
+            <label>分类<select id="qp-chapter-v103"><option value="__all__">全部</option></select></label>
+          </div>
+          <div class="qp-stats-v103">
+            <div class="qp-stat-v103"><span>总题数</span><b id="qp-total-v103">0</b></div>
+            <div class="qp-stat-v103"><span>已完成</span><b id="qp-done-v103">0</b></div>
+            <div class="qp-stat-v103"><span>正确率</span><b id="qp-accuracy-v103">0%</b></div>
+          </div>
+          <div class="qp-toolbar-v103">
+            <div class="qp-modes-v103">
+              <button class="qp-mode-v103 is-active" data-qp-mode="all" type="button">全部</button>
+              <button class="qp-mode-v103" data-qp-mode="memorize" type="button">背题</button>
+              <button class="qp-mode-v103" data-qp-mode="wrong" type="button">错题</button>
+              <button class="qp-mode-v103" data-qp-mode="starred" type="button">收藏</button>
+            </div>
+            <button class="qp-answer-card-btn-v103" id="qp-answer-card-btn-v103" type="button" aria-label="答题卡">📄 答题卡</button>
+          </div>
+          <div class="qp-meta-v103" id="qp-meta-v103"></div>
+          <div class="qp-track-v103"><div class="qp-bar-v103" id="qp-bar-v103" style="width:0%"></div></div>
+          <input class="qp-slider-v103" id="qp-slider-v103" type="range" min="1" max="1" value="1" aria-label="题目进度" />
+          <div class="qp-question-v103" id="qp-question-v103"></div>
+          <div class="qp-options-v103" id="qp-options-v103"></div>
+          <button class="primary qp-submit-v103" id="qp-submit-v103" type="button" hidden>提交答案</button>
+          <div class="qp-answer-v103" id="qp-answer-v103" hidden>
+            <div class="qp-answer-line-v103" id="qp-answer-line-v103"></div>
+            <div class="qp-explanation-v103" id="qp-explanation-v103"></div>
+          </div>
+          <div class="qp-nav-v103">
+            <button class="ghost qp-nav-btn-v103" id="qp-prev-v103" type="button">上一题</button>
+            <button class="ghost qp-nav-btn-v103" id="qp-star-v103" type="button">收藏</button>
+            <button class="ghost qp-nav-btn-v103" id="qp-next-v103" type="button">下一题</button>
+            <button class="ghost danger qp-nav-btn-v103" id="qp-reset-v103" type="button">重置进度</button>
+          </div>
+        </div>
+        <dialog id="qp-card-dialog-v103" class="qp-card-dialog-v103">
+          <div class="section-head"><div><p class="kicker">Answer Card</p><h2>答题卡</h2></div><button id="qp-card-close-v103" class="ghost" type="button">关闭</button></div>
+          <div class="qp-card-grid-v103" id="qp-card-grid-v103"></div>
+        </dialog>
+        <div id="qp-legacy-v103" style="display:none">
         <div class="card">
           <div class="section-head"><div><p class="kicker">Practice</p><h2>练习设置</h2></div><div class="pill" id="practice-progress">0 / 0</div></div>
           <div class="page-art-strip practice-art-strip">
@@ -310,6 +352,7 @@ C. 判断题
         <div class="card quiz-card" id="practice-card">
           <div class="empty">选择条件后点击“开始练习”。</div>
         </div>
+      </div>
       </section>
 
       <section id="exam" class="view">

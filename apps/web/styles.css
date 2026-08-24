@@ -7796,3 +7796,57 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 .cloud-ann-item-v103 p{margin:2px 0 0;font-size:13px;color:var(--muted);flex-basis:100%}
 .cloud-ann-item-v103 b{margin-right:8px}
 /* ============ SHIROHA_CLOUD_V103_END ============ */
+
+/* ============ SHIROHA_CLOUD_V103 快速练习（before 排版，手机友好） ============ */
+.qp-picker-row-v103{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.qp-picker-row-v103 label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.qp-picker-row-v103 select{min-height:40px;border:1px solid var(--line);border-radius:12px;padding:0 10px;font-size:15px;background:#fff}
+.qp-picker-row-v103 select:focus{outline:none;border-color:#2f6fed}
+.qp-stats-v103{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px}
+.qp-stat-v103{border:1px solid var(--line);border-radius:14px;background:#f8faff;padding:10px 8px;text-align:center}
+.qp-stat-v103 span{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+.qp-stat-v103 b{font-size:22px;color:#2f6fed}
+.qp-toolbar-v103{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.qp-modes-v103{display:flex;gap:6px;flex-wrap:wrap}
+.qp-mode-v103{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 16px;font-size:14px;color:#5b6472;cursor:pointer}
+.qp-mode-v103.is-active{background:#2f6fed;border-color:#2f6fed;color:#fff;font-weight:700}
+.qp-answer-card-btn-v103{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 14px;font-size:14px;color:#33445e;cursor:pointer;flex-shrink:0}
+.qp-meta-v103{font-size:13px;color:var(--muted);margin:0 0 8px}
+.qp-track-v103{height:8px;border-radius:999px;background:#e8edf5;overflow:hidden;margin:0 0 10px}
+.qp-bar-v103{height:100%;border-radius:999px;background:linear-gradient(90deg,#2f6fed,#7aa8ff);transition:width .2s}
+.qp-slider-v103{width:100%;margin:0 0 16px;accent-color:#2f6fed}
+.qp-question-v103{font-size:16.5px;line-height:1.75;color:#1f2937;margin:0 0 14px;font-weight:600;white-space:pre-wrap;word-break:break-word}
+.qp-options-v103{display:grid;gap:10px;margin:0 0 14px}
+.qp-option-v103{display:flex;align-items:flex-start;gap:12px;width:100%;min-height:52px;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:12px 14px;font-size:15.5px;line-height:1.6;color:#1f2937;cursor:pointer;transition:border-color .15s,background .15s}
+.qp-option-v103:active{transform:scale(.995)}
+.qp-option-v103 .qp-option-key-v103{flex-shrink:0;min-width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#eef1f6;color:#5b6472;font-weight:700;font-size:13px;margin-top:2px}
+.qp-option-v103.is-selected{border-color:#2f6fed;background:#f0f5ff}
+.qp-option-v103.is-selected .qp-option-key-v103{background:#2f6fed;color:#fff}
+.qp-option-v103.is-correct{border-color:#22a06b;background:#f0faf5}
+.qp-option-v103.is-correct .qp-option-key-v103{background:#22a06b;color:#fff}
+.qp-option-v103.is-wrong{border-color:#e5484d;background:#fdf3f3}
+.qp-option-v103.is-wrong .qp-option-key-v103{background:#e5484d;color:#fff}
+.qp-option-v103:disabled{cursor:default}
+.qp-submit-v103{width:100%;min-height:48px;border-radius:14px;font-size:16px;font-weight:700;margin:0 0 12px}
+.qp-answer-v103{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 14px;background:#fdfdfd}
+.qp-answer-line-v103{font-size:15px;font-weight:700;margin:0 0 8px}
+.qp-answer-line-v103.ok{color:#22a06b}
+.qp-answer-line-v103.bad{color:#e5484d}
+.qp-answer-line-v103.warn{color:#a05a13}
+.qp-explanation-v103{font-size:14px;line-height:1.7;color:#4b5563;white-space:pre-wrap;word-break:break-word}
+.qp-nav-v103{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;position:sticky;bottom:12px}
+.qp-nav-btn-v103{min-height:46px;border-radius:14px;font-size:15px}
+.qp-card-dialog-v103{border:none;border-radius:18px;padding:18px;width:min(560px,92vw);box-shadow:0 24px 60px rgba(15,23,42,.22)}
+.qp-card-dialog-v103::backdrop{background:rgba(15,23,42,.45)}
+.qp-card-grid-v103{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:8px;max-height:56vh;overflow:auto;padding:2px}
+.qp-card-item-v103{min-height:44px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:14px;font-weight:600;color:#33445e;cursor:pointer}
+.qp-card-item-v103.correct{background:#e7f7ef;border-color:#b7e6cf;color:#1b7a43}
+.qp-card-item-v103.wrong{background:#fdeaea;border-color:#f4c4c6;color:#c0392b}
+.qp-card-item-v103.pending{color:#9aa3b2}
+.qp-card-item-v103.is-current{border-color:#2f6fed;box-shadow:0 0 0 2px rgba(47,111,237,.28)}
+@media (max-width:640px){
+  .qp-picker-row-v103{grid-template-columns:1fr}
+  .qp-nav-v103{position:sticky;bottom:10px;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);padding:8px 2px;border-radius:16px}
+  .qp-question-v103{font-size:16px}
+}
+/* ============ SHIROHA_CLOUD_V103 快速练习 END ============ */
