@@ -8633,7 +8633,6 @@ function bindQuickPracticeV103(){
   const prev=$('#qp-prev-v103');if(prev)prev.onclick=()=>qpJumpV103(qpV103.index-1);
   const next=$('#qp-next-v103');if(next)next.onclick=()=>qpJumpV103(qpV103.index+1);
   const star=$('#qp-star-v103');if(star)star.onclick=qpToggleStarV103;
-  const reset=$('#qp-reset-v103');if(reset)reset.onclick=qpResetV103;
   const slider=$('#qp-slider-v103');if(slider)slider.oninput=()=>qpJumpV103(Number(slider.value)-1);
   const submit=$('#qp-submit-v103');if(submit)submit.onclick=qpSubmitV103;
   const cardBtn=$('#qp-answer-card-btn-v103');if(cardBtn)cardBtn.onclick=qpOpenCardV103;

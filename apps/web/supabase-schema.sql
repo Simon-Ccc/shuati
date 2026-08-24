@@ -103,8 +103,15 @@ create policy "class_members_select_group" on public.class_members
   for select using (public.is_group_member(class_members.group_id));
 create policy "class_members_select_admin" on public.class_members
   for select using (exists (select 1 from public.admins where user_id = auth.uid()));
+-- 插入：已是成员 或 是该班级创建者（创建班级时自动加入）
 create policy "class_members_insert_group" on public.class_members
-  for insert with check (public.is_group_member(class_members.group_id));
+  for insert with check (
+    public.is_group_member(class_members.group_id)
+    or exists (
+      select 1 from public.class_groups g
+      where g.id = class_members.group_id and g.created_by = auth.uid()
+    )
+  );
 create policy "class_members_delete_self" on public.class_members
   for delete using (user_id = auth.uid());
 create policy "class_members_delete_admin" on public.class_members
@@ -156,8 +163,9 @@ $$;
 grant execute on function public.is_group_member(uuid) to authenticated;
 
 -- 按邀请码加入班级的 RPC（security definer，绕开 RLS 校验邀请码，防全表枚举）
+-- 注意：输出参数用 gid/gname，避免与表列名 group_id/name 冲突（ambiguous）
 create or replace function public.join_class_group(p_code text)
-returns table (group_id uuid, name text)
+returns table (gid uuid, gname text)
 language plpgsql security definer set search_path = public
 as $$
 declare g public.class_groups%rowtype;
