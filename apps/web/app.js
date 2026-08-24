@@ -152,7 +152,7 @@ function bindNav(){ $$('.nav').forEach(btn=>btn.onclick=()=>{
   if(target==='ai-settings')renderAiSettingsV99();
   if(target==='import')syncAiImportActionV99();
   if(target==='leaderboard'&&window.ShirohaCloud&&window.ShirohaCloud.onLeaderboardViewV102)window.ShirohaCloud.onLeaderboardViewV102();
-  if(target==='practice'&&$('#qp-subject-v103'))qpEnterV103();
+  if(target==='practice'&&$('#qp-subject-v103')){try{qpEnterV103()}catch(e){warnDev('qpEnterV103 nav failed',e)}}
   resetViewScrollV282();
 });}
 function bindEvents(){
@@ -8243,7 +8243,7 @@ function switchViewV45(viewId){
   if(viewId==='ai-settings')renderAiSettingsV99();
   if(viewId==='import')syncAiImportActionV99();
   if(viewId==='leaderboard'&&window.ShirohaCloud&&window.ShirohaCloud.onLeaderboardViewV102)window.ShirohaCloud.onLeaderboardViewV102();
-  if(viewId==='practice'&&$('#qp-subject-v103'))qpEnterV103();
+  if(viewId==='practice'&&$('#qp-subject-v103')){try{qpEnterV103()}catch(e){warnDev('qpEnterV103 switch failed',e)}}
   resetViewScrollV282();
 }
 function ensureBankEditPanelV45(){
@@ -8341,11 +8341,6 @@ function cancelBankEditSessionV45(){
   switchViewV45('banks');
 }
 /* SHIROHA_WEB_V45_BANK_EDITOR_AND_FOCUS_NAV_END */
-
-// Initialize only after every top-level lexical binding has been created.
-init();
-
-})();
 
 
 /* SHIROHA_WEB_V29_4_STANDARD_TYPE_NUMBER_IMPORT_FIX */
@@ -8645,3 +8640,7 @@ function bindQuickPracticeV103(){
   const cardClose=$('#qp-card-close-v103');if(cardClose)cardClose.onclick=()=>{const dl=$('#qp-card-dialog-v103');if(dl&&dl.close)dl.close()};
 }
 /* ============ 快速练习模块 V103 END ============ */
+
+// Initialize only after every top-level lexical binding has been created.
+init();
+})();
