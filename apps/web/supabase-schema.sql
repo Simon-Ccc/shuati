@@ -244,13 +244,14 @@ begin
     '', '',
     '', '',
     '', 0,
-    '', '', '',
+    null, '', '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object('display_name', v_name, 'provider', 'email'),
     false, false,
     now(), now()
   ) returning id into v_uid;
-  -- 注意：confirmed_at 是 GENERATED ALWAYS 生成列（由 email_confirmed_at 派生），不可手动插入
+  -- 注意：confirmed_at 是 GENERATED ALWAYS 生成列（由 email_confirmed_at 派生），不可手动插入；
+  --       phone 有全列 UNIQUE 索引（users_phone_key），须用 NULL 而非 ''
   insert into public.profiles (user_id, display_name)
   values (v_uid, v_name)
   on conflict (user_id) do nothing;
