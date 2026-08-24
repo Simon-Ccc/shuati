@@ -121,7 +121,7 @@
     const gate=$('cloud-gate-v103');if(gate)gate.classList.remove('hidden');
     loginMode=currentUser?'login':'login';
     cloudToggleModeV102(true);
-    const st=$('cloud-modal-status-v102');if(st)st.textContent='登录后：数据保存在云端，跨设备同步，同学互看排行榜。';
+    const st=$('cloud-modal-status-v102');if(st)st.textContent='账号由老师统一创建发放，用「姓名 + 密码」登录。排行榜显示你的姓名。';
     const email=$('cloud-email-v102');if(email){email.value=currentUser?currentUser.email:'';email.focus()}
     setCloudGateStatusV103('');
   }
@@ -140,47 +140,36 @@
     el.className='notice'+(type==='ok'?' ok':type==='danger'?'':' warn');
     if(msg==='')el.className='notice';
   }
-  function cloudToggleModeV102(force){
-    if(currentUser){loginMode='login';}
-    else loginMode=(force===true||loginMode==='register')?'login':'register';
-    const title=$('cloud-modal-title-v102');if(title)title.textContent=loginMode==='register'?'注册账号':'登录';
-    const submit=$('cloud-submit-v102');if(submit)submit.textContent=loginMode==='register'?'注册':'登录';
-    const toggle=$('cloud-toggle-mode-v102');if(toggle)toggle.textContent=loginMode==='register'?'切换到登录':'切换到注册';
-    const nick=$('cloud-nickname-field-v102');if(nick)nick.classList.toggle('hidden',loginMode!=='register');
-    const pass=$('cloud-password-v102');if(pass)pass.setAttribute('autocomplete',loginMode==='register'?'new-password':'current-password');
-    const st=$('cloud-modal-status-v102');if(st&&!currentUser)st.textContent=loginMode==='register'?'注册后需要到邮箱点击确认链接。':'登录后：跨设备同步学习进度，同学互看排行榜。';
+  function cloudToggleModeV102(){
+    loginMode='login';
+    const title=$('cloud-modal-title-v102');if(title)title.textContent='登录';
+    const submit=$('cloud-submit-v102');if(submit)submit.textContent='登录';
+    const st=$('cloud-modal-status-v102');if(st&&!currentUser)st.textContent='账号由老师统一创建发放，用「姓名 + 密码」登录。排行榜显示你的姓名。';
   }
   async function cloudSubmitV102(){
     const c=cloudClientV102();if(!c){setCloudModalStatusV102('云端不可用：请检查网络与配置。','warn');return}
-    const email=($('cloud-email-v102')||{}).value||'';const password=($('cloud-password-v102')||{}).value||'';
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){setCloudModalStatusV102('请输入正确的邮箱地址。','warn');return}
+    const iden=($('cloud-email-v102')||{}).value||'';const password=($('cloud-password-v102')||{}).value||'';
+    const name=String(iden).trim();
+    if(!name){setCloudModalStatusV102('请输入姓名。','warn');return}
     if(password.length<6){setCloudModalStatusV102('密码至少 6 位。','warn');return}
     const submit=$('cloud-submit-v102');if(submit){submit.disabled=true;submit.textContent='处理中…'}
     try{
-      if(loginMode==='register'){
-        const nickname=($('cloud-nickname-v102')||{}).value||'';
-        const {data,error}=await c.auth.signUp({email,password,options:{data:{display_name:nickname}}});
+      let email=name.includes('@')?name:'';   // 直接输入邮箱则跳过姓名反查
+      if(!email){
+        const {data,error}=await c.rpc('get_user_email_by_name',{p_name:name});
         if(error)throw error;
-        if(data&&data.session){/* 邮箱确认已关闭：注册即登录 */
-          currentUser=data.session.user;
-          switchAccountV103();
-          hideCloudGateV103();renderCloudAuthUiV102();
-          setCloudModalStatusV102('注册成功，已自动登录！','ok');
-          syncNowV102();
-        }else{
-          setCloudModalStatusV102('注册成功！确认邮件已发送到 '+escV102(email)+'，请先到邮箱点击确认链接，再回来登录。','ok');
-          loginMode='login';cloudToggleModeV102(true);
-        }
-      }else{
-        const {data,error}=await c.auth.signInWithPassword({email,password});
-        if(error)throw error;
-        if(data&&data.session)currentUser=data.session.user;
-        switchAccountV103();
-        hideCloudGateV103();renderCloudAuthUiV102();
-        if(currentUser)syncNowV102();
+        const row=Array.isArray(data)?data[0]:data;
+        if(!row||!row.email){setCloudModalStatusV102('没有找到「'+escV102(name)+'」的账号，请联系老师确认账号信息。','danger');return}
+        email=row.email;
       }
+      const {data,error}=await c.auth.signInWithPassword({email,password});
+      if(error)throw error;
+      if(data&&data.session)currentUser=data.session.user;
+      switchAccountV103();
+      hideCloudGateV103();renderCloudAuthUiV102();
+      if(currentUser)syncNowV102();
     }catch(e){setCloudModalStatusV102(cloudErrorTextV102(e),'danger')}
-    finally{if(submit){submit.disabled=false;submit.textContent=loginMode==='register'?'注册':'登录'}}
+    finally{if(submit){submit.disabled=false;submit.textContent='登录'}}
   }
   async function cloudForgotV102(){
     const c=cloudClientV102();if(!c)return;
@@ -559,6 +548,17 @@
     const {data:profiles}=await c.from('profiles').select('user_id,display_name');
     const nameOf=(uid)=>profiles&&profiles.find(p=>p.user_id===uid)||null;
     panel.innerHTML=`<div class="section-head"><div><p class="kicker">Admin</p><h3>班级管理（管理员）</h3><p class="muted">可查看全部班级、踢出成员、查看学生错题详情、修改班级设置。</p></div></div>
+      <div class="cloud-admin-create-user-v102">
+        <div class="section-head" style="margin-top:8px"><div><h4 style="margin:0">创建学生账号</h4><p class="muted">输入姓名和初始密码，创建后把账号发给学生，学生用「姓名 + 密码」登录。姓名不可重复。</p></div></div>
+        <div class="form-grid">
+          <label>姓名<input class="admin-create-name-v102" placeholder="学生姓名（显示在排行榜）" /></label>
+          <label>初始密码<input class="admin-create-pass-v102" type="text" placeholder="至少 6 位" /></label>
+        </div>
+        <div class="row-actions" style="margin-top:10px">
+          <button class="primary mini-btn" data-admin-create-btn-v102 type="button">创建账号</button>
+        </div>
+        <div class="admin-create-result-v102 muted" style="margin-top:8px"></div>
+      </div>
       ${(groups||[]).map(g=>{
         const ms=(members||[]).filter(m=>m.group_id===g.id);
         return `<div class="cloud-class-badge-v102" data-admin-class-v102="${escV102(g.id)}">
@@ -586,6 +586,7 @@
             </div>
           </details>
         </div>`;}).join('')||'<p class="muted">还没有任何班级。</p>'}`;
+    panel.querySelectorAll('[data-admin-create-btn-v102]').forEach(b=>b.onclick=adminCreateUserV102);
     panel.querySelectorAll('[data-admin-kick-v102]').forEach(b=>b.onclick=()=>adminKickV102(b.dataset.adminKickV102,b.dataset.adminUidV102));
     panel.querySelectorAll('[data-admin-wrong-v102]').forEach(b=>b.onclick=()=>adminWrongDetailV102(b.dataset.adminUidV102));
     panel.querySelectorAll('[data-admin-rename-btn-v102]').forEach(b=>b.onclick=()=>{
@@ -633,6 +634,35 @@
       cloudToastV102('公告已删除。','ok');
       await renderLeaderboardV102();
     });
+  }
+  async function adminCreateUserV102(){
+    const panel=$('cloud-admin-panel-v102');if(!panel)return;
+    const nameEl=panel.querySelector('.admin-create-name-v102');
+    const passEl=panel.querySelector('.admin-create-pass-v102');
+    const result=panel.querySelector('.admin-create-result-v102');
+    if(!nameEl||!passEl||!result)return;
+    const name=String(nameEl.value||'').trim();
+    const pass=String(passEl.value||'');
+    if(!name){result.textContent='请输入姓名。';result.style.color='var(--red)';return}
+    if(pass.length<6){result.textContent='密码至少 6 位。';result.style.color='var(--red)';return}
+    const c=cloudClientV102();if(!c){result.textContent='云端不可用，请检查网络。';result.style.color='var(--red)';return}
+    result.textContent='创建中…';result.style.color='';
+    try{
+      const {data,error}=await c.rpc('admin_create_user',{p_name:name,p_password:pass});
+      if(error)throw error;
+      const row=Array.isArray(data)?data[0]:data;
+      if(row&&row.created){
+        result.textContent='账号已创建：姓名「'+escV102(name)+'」密码「'+escV102(pass)+'」。请把这两项发给学生。';
+        result.style.color='var(--green)';
+        nameEl.value='';passEl.value='';
+      }else{
+        result.textContent=(row&&row.message)||'创建失败，请稍后再试。';
+        result.style.color='var(--red)';
+      }
+    }catch(e){
+      result.textContent=cloudErrorTextV102(e);
+      result.style.color='var(--red)';
+    }
   }
   async function adminKickV102(gid,uid){
     if(!confirm('确定将该成员踢出班级？'))return;
