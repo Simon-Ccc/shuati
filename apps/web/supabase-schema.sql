@@ -98,18 +98,13 @@ create policy "class_groups_delete_admin" on public.class_groups
 -- class_members：本人/同班/管理员可读；本人退出；管理员踢人；成员经 RPC 或建班插入
 create policy "class_members_select_self" on public.class_members
   for select using (user_id = auth.uid());
+-- 同班成员判断用 security definer 函数（直接子查询本表会 infinite recursion）
 create policy "class_members_select_group" on public.class_members
-  for select using (
-    exists (select 1 from public.class_members me
-            where me.group_id = class_members.group_id and me.user_id = auth.uid())
-  );
+  for select using (public.is_group_member(class_members.group_id));
 create policy "class_members_select_admin" on public.class_members
   for select using (exists (select 1 from public.admins where user_id = auth.uid()));
 create policy "class_members_insert_group" on public.class_members
-  for insert with check (
-    exists (select 1 from public.class_members me
-            where me.group_id = class_members.group_id and me.user_id = auth.uid())
-  );
+  for insert with check (public.is_group_member(class_members.group_id));
 create policy "class_members_delete_self" on public.class_members
   for delete using (user_id = auth.uid());
 create policy "class_members_delete_admin" on public.class_members
@@ -148,6 +143,17 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- 判断是否为某班级成员（security definer 绕开 RLS 自引用，供 class_members 策略使用）
+create or replace function public.is_group_member(p_group_id uuid)
+returns boolean language sql security definer set search_path = public
+as $$
+  select exists (
+    select 1 from public.class_members
+    where group_id = p_group_id and user_id = auth.uid()
+  );
+$$;
+grant execute on function public.is_group_member(uuid) to authenticated;
 
 -- 按邀请码加入班级的 RPC（security definer，绕开 RLS 校验邀请码，防全表枚举）
 create or replace function public.join_class_group(p_code text)
