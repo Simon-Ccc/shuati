@@ -7265,8 +7265,17 @@ function syncHomeVersionPromptV586(){
   try{
     const root=document.querySelector('#dashboard')||document.body||document;
     document.title=`Shiroha Quiz - ${label}`;
+    // 首页版本标签 → 题库更新检查状态
     const homeVersionLabel=document.querySelector('#home-version-label');
-    if(homeVersionLabel)homeVersionLabel.textContent=label;
+    if(homeVersionLabel){
+      const m=state.settings.banksManifestV103||{};
+      let text='题库检查中…';
+      if(m.checking)text='题库检查中…';
+      else if(m.lastResult==='failed')text='题库检查失败，请刷新重试';
+      else if(m.lastResult==='updated')text='题库已更新 · '+fmtBankCheckTimeV103(m.lastCheckedAt);
+      else if(m.lastResult==='ok')text='题库已是最新 · '+fmtBankCheckTimeV103(m.lastCheckedAt);
+      homeVersionLabel.textContent=text;
+    }
     const nodes=[...root.querySelectorAll('h1,h2,h3,h4,b,strong,span,p,div')];
     nodes.forEach(el=>{
       if(!el||/^(SCRIPT|STYLE|INPUT|TEXTAREA|SELECT|OPTION)$/i.test(el.tagName||''))return;
@@ -7277,6 +7286,12 @@ function syncHomeVersionPromptV586(){
       else if(leaf && /^V\s*\d+\s*[:：]\s*基本完成版$/.test(txt))el.textContent=label;
     });
   }catch(e){}
+}
+function fmtBankCheckTimeV103(ts){
+  if(!ts)return'刚刚';
+  const t=new Date(Number(ts));if(isNaN(t.getTime()))return'刚刚';
+  const hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+  return hm;
 }
 function init(){upgradeState();ensureAiImportStateV99();ensureDefaultBank();seedBanksFromIndexV1();registerCloudBridgeV102();if(window.ShirohaCloud&&window.ShirohaCloud.initCloudV102)window.ShirohaCloud.initCloudV102();ensureBankGroupUiV58();bindNav();bindEvents();bindMultiBlankEditorV58914();bindV25ToV28Events();ensureV25ToV28Panels();setupSidebarCollapse();renderBankSelect();renderAll();setupEnhancedDataToolsV23();updateShellLayoutByView();syncHomeVersionPromptV586();setTimeout(syncHomeVersionPromptV586,80);setTimeout(syncHomeVersionPromptV586,300);}
 function registerCloudBridgeV102(){
@@ -7375,11 +7390,13 @@ async function fetchJsonLocalV252(url){
 // 索引优先读 data/banks-index.json（权威来源），仅当 HTTP 获取失败时（如 file:// 离线）退回 window.questionBankIndex。
 async function seedBanksFromIndexV1(){
   try{
+    const manifest=state.settings.banksManifestV103&&typeof state.settings.banksManifestV103==='object'?state.settings.banksManifestV103:{items:{}};
+    manifest.checking=true;manifest.lastResult='';
+    syncHomeVersionPromptV586();
     let index=null;
     try{index=await fetchJsonLocalV252('data/banks-index.json')}catch(e){warnDev('读取 banks-index.json 失败，退回 question-bank.js 索引。',e);}
     if(!Array.isArray(index)||!index.length)index=window.questionBankIndex||[];
-    if(!Array.isArray(index)||!index.length)return;
-    const manifest=state.settings.banksManifestV103&&typeof state.settings.banksManifestV103==='object'?state.settings.banksManifestV103:{};
+    if(!Array.isArray(index)||!index.length){manifest.checking=false;manifest.lastResult='failed';saveSilent();syncHomeVersionPromptV586();return;}
     const items=manifest.items&&typeof manifest.items==='object'?manifest.items:{};
     const deleted=Array.isArray(state.settings.deletedBuiltinBanksV103)?state.settings.deletedBuiltinBanksV103:[];
     let changed=false;
@@ -7410,11 +7427,21 @@ async function seedBanksFromIndexV1(){
       changed=true;
     }
     manifest.items=items;
+    manifest.checking=false;
+    manifest.lastCheckedAt=Date.now();
+    manifest.lastResult=changed?'updated':'ok';
     state.settings={...(state.settings||{}),banksManifestV103:manifest};
-    if(changed){
-      saveSilent();renderAll();
-    }
-  }catch(e){warnDev('seedBanksFromIndexV1 failed',e);}
+    saveSilent();
+    if(changed)renderAll();else syncHomeVersionPromptV586();
+  }catch(e){
+    warnDev('seedBanksFromIndexV1 failed',e);
+    try{
+      const m=state.settings.banksManifestV103||{items:{}};
+      m.checking=false;m.lastResult='failed';
+      state.settings={...(state.settings||{}),banksManifestV103:m};
+      syncHomeVersionPromptV586();
+    }catch(_){}
+  }
 }
 async function loadBuiltInBankV252(){
   try{
