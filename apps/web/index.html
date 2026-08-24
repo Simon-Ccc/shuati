@@ -276,6 +276,7 @@ C. 判断题
         <div class="qp-before-shell">
           <div class="qp-back-row">
             <button type="button" id="qpBackHomeV103" class="qp-back-btn">← 返回首页</button>
+            <button class="qp-reset-btn-v104" id="qpResetRecordsBtnV103" type="button">清空记录</button>
           </div>
           <section class="subject-row" aria-label="题库选择">
             <label class="subject-switcher">
@@ -301,12 +302,9 @@ C. 判断题
               <button class="mode-tab" type="button" data-qp-mode="wrong">错题</button>
               <button class="mode-tab" type="button" data-qp-mode="starred">收藏</button>
             </div>
-            <div class="toolbar-right-v104">
-              <button class="qp-reset-btn-v104" id="qpResetRecordsBtnV103" type="button">清空记录</button>
-              <button class="icon-button" id="answerCardButton" type="button" aria-label="答题卡">
-                <span aria-hidden="true">📄</span>
-              </button>
-            </div>
+            <button class="icon-button" id="answerCardButton" type="button" aria-label="答题卡">
+              <span aria-hidden="true">📄</span>
+            </button>
           </section>
 
           <section class="question-panel" id="questionPanel" aria-live="polite">
@@ -342,6 +340,11 @@ C. 判断题
           <form method="dialog">
             <div class="dialog-header">
               <h2>答题卡</h2>
+              <div class="card-legend-v105" aria-hidden="true">
+                <span class="lg lg-ok">答对</span>
+                <span class="lg lg-bad">答错</span>
+                <span class="lg">未做</span>
+              </div>
               <button class="icon-button" type="submit" aria-label="关闭"><span aria-hidden="true">×</span></button>
             </div>
             <div class="answer-card-grid" id="answerCardGrid"></div>

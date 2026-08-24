@@ -8612,10 +8612,10 @@ function qpRenderCardV103(){
   const bank=qpBankV103();const d=bank?qpBankDataV103(bank.id):null;
   grid.innerHTML=qpV103.visible.map((q,i)=>{
     const p=d?d.questions[q.id]:null;
-    const status=p&&p.answered?(p.correct===true?'correct':p.correct===false?'wrong':'pending'):'pending';
+    const status=p&&p.answered?(p.correct===true?'is-correct':p.correct===false?'is-wrong':''):'';
     return `<button type="button" class="answer-card-item ${status} ${i===qpV103.index?'is-current':''}" data-qp-card-i="${i}">${i+1}</button>`;
   }).join('')||'<p class="muted">当前筛选范围没有题目。</p>';
-  $$('#qp-card-grid-v103 [data-qp-card-i]').forEach(b=>b.onclick=()=>{
+  $$('#answerCardGrid [data-qp-card-i]').forEach(b=>b.onclick=()=>{
     qpJumpV103(Number(b.dataset.qpCardI));
     const dl=$('#answerCardDialog');if(dl&&dl.close)dl.close();
   });
