@@ -233,7 +233,6 @@ begin
     email_change_token_current, email_change_confirm_status,
     phone, phone_change_token, reauthentication_token,
     raw_app_meta_data, raw_user_meta_data,
-    confirmed_at,
     is_anonymous, is_sso_user,
     created_at, updated_at
   ) values (
@@ -248,10 +247,10 @@ begin
     '', '', '',
     '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object('display_name', v_name, 'provider', 'email'),
-    now(),
     false, false,
     now(), now()
   ) returning id into v_uid;
+  -- 注意：confirmed_at 是 GENERATED ALWAYS 生成列（由 email_confirmed_at 派生），不可手动插入
   insert into public.profiles (user_id, display_name)
   values (v_uid, v_name)
   on conflict (user_id) do nothing;
