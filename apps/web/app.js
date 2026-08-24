@@ -8589,17 +8589,23 @@ function qpToggleStarV103(){
 }
 function qpResetV103(){
   const bank=qpBankV103();if(!bank)return;
-  if(!confirm('确定清空当前筛选范围（当前题库+模式）的做题记录？收藏会保留。'))return;
+  if(!confirm(`确定清空“${bank.name}”的做题记录吗？收藏会保留，清空后从第 1 题重新练习。`))return;
   const d=qpBankDataV103(bank.id);
-  const scope=new Set(qpV103.visible.map(q=>q.id));
   for(const qid of Object.keys(d.questions)){
-    if(!scope.has(qid))continue;
     const p=d.questions[qid];
     d.questions[qid]={answered:false,correct:false,starred:!!(p&&p.starred)};
   }
+  // 对齐 before：做题记录清空后，这些题一并移出错题本（收藏不受影响）
+  try{
+    const ids=new Set(Object.keys(d.questions));
+    const arr=getWrongEntries(bank.id);
+    if(arr.length)setWrongEntries(arr.filter(x=>!ids.has(x.id)),bank.id);
+    saveSilent();
+  }catch(e){warnDev('qpResetV103 wrongbook sync failed',e)}
   qpV103.index=0;
+  qpSavePositionV103();
   qpSaveV103();qpRenderAllV103();
-  showNotice('快速练习','已清空当前筛选范围的做题记录。','ok');
+  showNotice('快速练习',`「${bank.name}」的做题记录已清空，已从第 1 题重新开始。`,'ok');
 }
 function qpRenderCardV103(){
   const grid=$('#answerCardGrid');if(!grid)return;
@@ -8638,6 +8644,7 @@ function bindQuickPracticeV103(){
   const slider=$('#questionSlider');if(slider)slider.oninput=()=>qpJumpV103(Number(slider.value)-1);
   const submit=$('#submitButton');if(submit)submit.onclick=qpSubmitV103;
   const cardBtn=$('#answerCardButton');if(cardBtn)cardBtn.onclick=qpOpenCardV103;
+  const qpReset=$('#qpResetRecordsBtnV103');if(qpReset)qpReset.onclick=qpResetV103;
   const cardClose=$('#qp-card-close-v103');if(cardClose)cardClose.onclick=()=>{const dl=$('#answerCardDialog');if(dl&&dl.close)dl.close()};
   const backHome=$('#qpBackHomeV103');if(backHome)backHome.onclick=()=>{try{exitPracticeFocus()}catch(e){}switchViewV45('home')};
   // 左右滑动切题（对齐 before 原版：面板内横向滑动）

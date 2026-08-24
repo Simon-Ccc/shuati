@@ -7889,6 +7889,9 @@ body.practice-focus.practice-rail-collapsed-v34 #practice-card > .practice-side-
 .qp-before-shell .secondary-button{min-height:46px;padding:0 16px;border:1px solid var(--line);color:var(--ink);background:rgba(255,255,255,.84);font-weight:700}
 .qp-before-shell .icon-button{display:grid;place-items:center;width:44px;height:44px;flex:0 0 auto;color:var(--ink);background:rgba(255,255,255,.82);border:1px solid rgba(31,41,51,.08)}
 .qp-before-shell .icon-button span{font-size:1.35rem;line-height:1}
+.qp-before-shell .toolbar-right-v104{display:flex;align-items:center;gap:10px}
+.qp-before-shell .qp-reset-btn-v104{min-height:44px;padding:0 14px;border:1px solid rgba(190,59,69,.45);border-radius:8px;color:#b3373f;background:rgba(255,255,255,.84);font-weight:700;font-size:13px;cursor:pointer;flex:0 0 auto}
+.qp-before-shell .qp-reset-btn-v104:active{background:rgba(251,235,237,.9)}
 .answer-card-item{min-width:0;min-height:42px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff;cursor:pointer;font-weight:800}
 .answer-card-item.is-current{border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,122,104,.14)}
 .answer-card-item.is-correct{border-color:rgba(39,118,74,.7);color:#17603a;background:#e9f6ec}
