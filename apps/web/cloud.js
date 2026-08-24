@@ -29,13 +29,21 @@
   const cfgOkV102=()=>!PLACEHOLDER&&!!CONFIG.url&&!!CONFIG.anonKey;
   const cloudReadyV102=()=>!!window.supabase&&!!window.supabase.createClient&&cfgOkV102()&&navigator.onLine!==false;
 
+  function metaKeyV102(){return currentUser?('shiroha_quiz_cloud_meta_v102_u_'+currentUser.id):CLOUD_META_KEY}
   function readMetaV102(){
     try{
-      const raw=localStorage.getItem(CLOUD_META_KEY);
+      const raw=localStorage.getItem(metaKeyV102());
       if(raw){const m=JSON.parse(raw);lastSyncAt=Number(m.lastSyncAt||0);lastRemoteUpdatedAt=Number(m.lastRemoteUpdatedAt||0);}
     }catch(_){}
   }
-  function writeMetaV102(){try{localStorage.setItem(CLOUD_META_KEY,JSON.stringify({lastSyncAt,lastRemoteUpdatedAt}))}catch(_){}}
+  function writeMetaV102(){try{localStorage.setItem(metaKeyV102(),JSON.stringify({lastSyncAt,lastRemoteUpdatedAt}))}catch(_){}}
+  // 账号切换：先切本地存储桶，再做云同步（避免跨账号数据串号）
+  function switchAccountV103(){
+    try{
+      if(bridge&&bridge.switchAccountStorage)bridge.switchAccountStorage(currentUser?currentUser.id:'');
+      readMetaV102();
+    }catch(e){warnDevV102('switchAccountV103 failed',e)}
+  }
 
   function cloudClientV102(){
     if(client)return client;
@@ -158,6 +166,7 @@
         const {data,error}=await c.auth.signInWithPassword({email,password});
         if(error)throw error;
         if(data&&data.session)currentUser=data.session.user;
+        switchAccountV103();
         hideCloudGateV103();renderCloudAuthUiV102();
         if(currentUser)syncNowV102();
       }
@@ -708,20 +717,20 @@
     if(!c){renderCloudAuthUiV102();showCloudGateV103();setCloudGateStatusV103('网络不可用：请检查网络连接后刷新重试。',true);return}
     try{
       c.auth.getSession().then(({data})=>{
-        if(data&&data.session){currentUser=data.session.user;hideCloudGateV103();refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()})}
+        if(data&&data.session){currentUser=data.session.user;switchAccountV103();hideCloudGateV103();refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()})}
         else {renderCloudAuthUiV102();showCloudGateV103()}
       }).catch(e=>{warnDevV102('getSession failed',e);renderCloudAuthUiV102();showCloudGateV103()});
       authUnsub=c.auth.onAuthStateChange((event,session)=>{
         const wasUser=!!currentUser;
         currentUser=session?session.user:null;
         if(currentUser&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||!wasUser)){
+          switchAccountV103();
           hideCloudGateV103();
           refreshAdminFlagV102().then(()=>{renderCloudAuthUiV102();syncNowV102()});
         }else if(!currentUser){
-          isAdmin=false;adminChecked=false;renderCloudAuthUiV102();
-          if(event==='SIGNED_OUT'){
-            showCloudGateV103();switchViewV102('dashboard');
-          }
+          isAdmin=false;adminChecked=false;
+          if(event==='SIGNED_OUT'){switchAccountV103();showCloudGateV103();switchViewV102('dashboard')}
+          renderCloudAuthUiV102();
         }else{renderCloudAuthUiV102()}
       });
     }catch(e){warnDevV102('initCloudV102 failed',e);renderCloudAuthUiV102();showCloudGateV103()}

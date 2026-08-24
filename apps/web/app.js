@@ -43,7 +43,7 @@ function migrateState(raw,sourceKey){
   return migrated;
 }
 function clearStoredState(){[KEY,...LEGACY_KEYS,...CLEAR_STORAGE_KEYS,AI_KEY_LOCAL_V99].forEach(k=>{try{localStorage.removeItem(k)}catch(_){}});try{sessionStorage.removeItem(AI_KEY_SESSION_V99)}catch(_){}}
-function saveState(){localStorage.setItem(KEY,serializeState());toast('已保存到浏览器本地。','ok')}
+function saveState(){localStorage.setItem(storageKeyV103(),serializeState());toast('已保存到浏览器本地。','ok')}
 function now(){return new Date().toISOString()}
 function makeId(prefix='id',...parts){
   const base=parts.filter(v=>v!=null&&String(v).trim()).map(v=>String(v).replace(/[^A-Za-z0-9_-]+/g,'_').slice(0,32)).filter(Boolean).join('_');
@@ -162,7 +162,7 @@ $('#dual-question-file').onchange=e=>readDualFile(e,'question');$('#dual-answer-
 $('#edit-close-btn').onclick=closeEditModal;$('#edit-save-btn').onclick=saveEditQuestion;$('#edit-delete-btn').onclick=deleteEditQuestion;const pf=$('#import-preview-filter');if(pf)pf.onchange=e=>{importPreviewFilter=e.target.value;renderImportPreview(importCache)};const bid=$('#batch-delete-import-btn');if(bid)bid.onclick=batchDeleteImportSelected;const cis=$('#clear-import-selection-btn');if(cis)cis.onclick=()=>{importSelected.clear();renderImportPreview(importCache)};
 $('#dedupe-btn').onclick=dedupeActiveBank;$('#rename-bank-btn').onclick=renameActiveBank;$('#duplicate-bank-btn').onclick=duplicateActiveBank;$('#new-empty-bank-btn').onclick=newEmptyBank;$('#merge-bank-btn').onclick=mergeBankIntoActive;$('#bank-sort-mode').onchange=renderBankList;$('#start-practice-btn').onclick=startPractice;$('#reset-practice-btn').onclick=()=>{exitPracticeFocus();$('#practice-card').innerHTML='<div class="empty">选择条件后点击“开始练习”。</div>';practice={items:[],idx:0,answered:0,correct:0,wrong:0,start:0};$('#practice-progress').textContent='0 / 0';syncPracticeStartUiV58916(true)};
 $('#start-exam-btn').onclick=startExam;$('#submit-exam-btn').onclick=()=>submitExam(false);$('#clear-wrong-btn').onclick=()=>{if(confirm('确定清空当前题库错题本？')){state.wrongBook[activeBank().id]=[];saveSilent();renderAll()}};
-$('#clear-records-btn').onclick=()=>{if(confirm('确定清空全部练习与考试记录？')){state.records=[];saveSilent();renderAll()}};$('#export-records-btn').onclick=exportRecords;$('#record-mode-filter').onchange=renderRecords;$('#record-limit').onchange=renderRecords;$('#record-refresh-btn').onclick=renderRecords;$('#wrong-status-filter').onchange=renderWrongBook;$('#wrong-sort-mode').onchange=renderWrongBook;$('#practice-wrong-btn').onclick=startWrongPractice;const practiceFavBtnV596=$('#practice-favorites-btn-v596');if(practiceFavBtnV596)practiceFavBtnV596.onclick=()=>switchPracticeSourceV27('favorite');const clearFavBtnV596=$('#clear-favorites-btn-v596');if(clearFavBtnV596)clearFavBtnV596.onclick=clearCurrentFavoritesV596;const exportJsonBtn=$('#export-json-btn');if(exportJsonBtn)exportJsonBtn.onclick=exportCurrentBank;const exportAllBtn=$('#export-all-btn');if(exportAllBtn)exportAllBtn.onclick=exportAll;const importBackupQuickBtnV598=$('#import-backup-quick-btn-v598');if(importBackupQuickBtnV598)importBackupQuickBtnV598.onclick=()=>{backupImportModeV23=$('#settings-backup-mode-v23')?.value||'overwrite';$('#backup-json-file-v23')?.click()};$('#reset-data-btn').onclick=resetData;bindLimitControlsV60();bindPracticeStartControlsV58916();bindAiImportEventsV99();
+$('#clear-records-btn').onclick=()=>{if(confirm('确定清空全部练习与考试记录？')){state.records=[];saveSilent();renderAll()}};$('#export-records-btn').onclick=exportRecords;$('#record-mode-filter').onchange=renderRecords;$('#record-limit').onchange=renderRecords;$('#record-refresh-btn').onclick=renderRecords;$('#wrong-status-filter').onchange=renderWrongBook;$('#wrong-sort-mode').onchange=renderWrongBook;$('#practice-wrong-btn').onclick=startWrongPractice;const practiceFavBtnV596=$('#practice-favorites-btn-v596');if(practiceFavBtnV596)practiceFavBtnV596.onclick=()=>{qpEnterV103('starred');switchViewV45('practice')};const clearFavBtnV596=$('#clear-favorites-btn-v596');if(clearFavBtnV596)clearFavBtnV596.onclick=clearCurrentFavoritesV596;const exportJsonBtn=$('#export-json-btn');if(exportJsonBtn)exportJsonBtn.onclick=exportCurrentBank;const exportAllBtn=$('#export-all-btn');if(exportAllBtn)exportAllBtn.onclick=exportAll;const importBackupQuickBtnV598=$('#import-backup-quick-btn-v598');if(importBackupQuickBtnV598)importBackupQuickBtnV598.onclick=()=>{backupImportModeV23=$('#settings-backup-mode-v23')?.value||'overwrite';$('#backup-json-file-v23')?.click()};$('#reset-data-btn').onclick=resetData;bindLimitControlsV60();bindPracticeStartControlsV58916();bindAiImportEventsV99();
 }
 
 function cleanImportBankNameFromFile(fileName){
@@ -182,7 +182,42 @@ function setImportBankNameFromFile(fileName){
   }
 }
 
-function saveSilent(){localStorage.setItem(KEY,serializeState());try{if(window.ShirohaCloud&&window.ShirohaCloud.onLocalStateSavedV102)window.ShirohaCloud.onLocalStateSavedV102()}catch(_){}}
+function saveSilent(){localStorage.setItem(storageKeyV103(),serializeState());try{if(window.ShirohaCloud&&window.ShirohaCloud.onLocalStateSavedV102)window.ShirohaCloud.onLocalStateSavedV102()}catch(_){}}
+// 账号隔离：本地状态按登录账号分桶存储（''=未登录匿名桶）。
+let currentAccountUidV103='';
+let accountStateLoadedV103=false;
+function storageKeyV103(){return currentAccountUidV103?('shiroha_quiz_state_v28_4_c1_u_'+currentAccountUidV103):KEY}
+// 切换账号桶：保存当前桶 → 加载目标桶；目标桶为空且是新账号时，把匿名桶旧数据迁移过去（避免历史记录丢失与串号）
+function switchAccountStorageV103(userId){
+  try{
+    const uid=String(userId||'');
+    if(uid===currentAccountUidV103&&accountStateLoadedV103)return;
+    // 保存当前桶
+    try{localStorage.setItem(storageKeyV103(),serializeState())}catch(_){}
+    let raw=null;
+    try{raw=localStorage.getItem(uid?('shiroha_quiz_state_v28_4_c1_u_'+uid):KEY)}catch(_){}
+    if(!raw&&uid){
+      // 账号桶为空：从匿名桶迁移旧数据，迁移后清空匿名桶
+      try{
+        raw=localStorage.getItem(KEY);
+        localStorage.setItem(KEY,JSON.stringify(blankState()));
+      }catch(_){}
+    }
+    currentAccountUidV103=uid;
+    if(raw){
+      try{
+        const parsed=JSON.parse(raw);
+        Object.assign(state,parsed);
+      }catch(_){}
+    }else{
+      Object.assign(state,blankState());
+    }
+    upgradeState();
+    accountStateLoadedV103=true;
+    saveSilent();renderAll();
+    try{qpLoadV103()}catch(_){}
+  }catch(e){warnDev('switchAccountStorageV103 failed',e)}
+}
 
 /* SHIROHA_WEB_ISSUE_99_AI_IMPORT_START */
 function defaultAiConfigV99(){return {provider:'ollama',endpoint:AI_PROVIDER_PRESETS_V99.ollama.endpoint,model:'',timeoutSeconds:120,rememberKey:false}}
@@ -6565,9 +6600,9 @@ function exportBankById(id){const b=state.banks.find(x=>x.id===id);if(!b)return;
 function dedupeActiveBank(){const b=activeBank();const map=new Map(),dups=[];b.questions.forEach(q=>{const k=normalizeText(q.question);if(map.has(k))dups.push(q);else map.set(k,q)});b.questions=[...map.values()].map((q,i)=>({...q,number:i+1}));saveSilent();renderAll();alert(`去重完成：删除 ${dups.length} 道重复题，剩余 ${b.questions.length} 道。`)}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function startWrongPractice(){
-  const limit=$('#wrong-practice-limit')?.value||'custom';const customCount=readCustomCountV60('#wrong-practice-custom-count',20);
-  $$('.nav').forEach(b=>b.classList.remove('active'));document.querySelector('[data-view="practice"]').classList.add('active');$$('.view').forEach(v=>v.classList.remove('active'));$('#practice').classList.add('active');$('#page-title').textContent='刷题练习';
-  $('#practice-source').value='wrong';$('#practice-order').value='random';$('#practice-limit').value=limit;if($('#practice-custom-count'))$('#practice-custom-count').value=customCount;syncLimitControlV60('practice');updateShellLayoutByView('practice');startPractice({type:PRACTICE_SCOPE_BANK_V8916,value:activeBank().id});
+  // 错题本「重练未掌握错题」→ 快速练习错题模式
+  qpEnterV103('wrong');
+  switchViewV45('practice');
 }
 function enterPracticeFocus(){
   document.body.classList.add('practice-focus');
@@ -7296,20 +7331,6 @@ function fmtBankCheckTimeV103(ts){
   const hm=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
   return hm;
 }
-// 首页快速练习：直接按当前题库开练（随机20 / 顺序20 / 错题重练20），复用 startPractice
-function bindQuickPracticeV103(){
-  const quick=(order,source)=>{
-    const s=$('#practice-source');if(s)s.value=source||'all';
-    const o=$('#practice-order');if(o)o.value=order;
-    const l=$('#practice-limit');if(l)l.value='custom';
-    const c=$('#practice-custom-count');if(c)c.value='20';
-    startPractice({type:PRACTICE_SCOPE_BANK_V8916,value:activeBank().id});
-    const nav=document.querySelector('.nav[data-view="practice"]');if(nav)nav.click();
-  };
-  const r=$('#quick-practice-random-v103');if(r)r.onclick=()=>quick('random','all');
-  const s=$('#quick-practice-sequence-v103');if(s)s.onclick=()=>quick('sequence','all');
-  const w=$('#quick-practice-wrong-v103');if(w)w.onclick=()=>quick('random','wrong');
-}
 function init(){upgradeState();ensureAiImportStateV99();ensureDefaultBank();seedBanksFromIndexV1();registerCloudBridgeV102();if(window.ShirohaCloud&&window.ShirohaCloud.initCloudV102)window.ShirohaCloud.initCloudV102();ensureBankGroupUiV58();bindNav();bindEvents();bindQuickPracticeV103();bindMultiBlankEditorV58914();bindV25ToV28Events();ensureV25ToV28Panels();setupSidebarCollapse();renderBankSelect();renderAll();setupEnhancedDataToolsV23();updateShellLayoutByView();syncHomeVersionPromptV586();setTimeout(syncHomeVersionPromptV586,80);setTimeout(syncHomeVersionPromptV586,300);}
 function registerCloudBridgeV102(){
   try{
@@ -7319,6 +7340,7 @@ function registerCloudBridgeV102(){
       getBankList:()=>state.banks.map(b=>({id:b.id,name:b.name,count:(b.questions||[]).length})),
       getBankById:(bid)=>state.banks.find(b=>b.id===bid)||null,
       applyRemoteSnapshot:applyRemoteSnapshotV102,
+      switchAccountStorage:switchAccountStorageV103,
       toast:(msg,type)=>showNotice('云端同步',msg,type)
     });
   }catch(e){warnDev('registerCloudBridgeV102 failed',e)}
@@ -8361,8 +8383,9 @@ init();
 /* ============ 快速练习模块 V103（before 排版：直接刷题，手机友好） ============ */
 const QP_KEY_V103='shiroha_quiz_qp_v103';
 let qpV103={bankId:'',chapterId:'__all__',mode:'all',index:0,visible:[],byBank:{},autoTimer:0};
-function qpSaveV103(){try{localStorage.setItem(QP_KEY_V103,JSON.stringify({byBank:qpV103.byBank}))}catch(_){}}
-function qpLoadV103(){try{const raw=localStorage.getItem(QP_KEY_V103);if(raw){const d=JSON.parse(raw);qpV103.byBank=(d&&d.byBank&&typeof d.byBank==='object')?d.byBank:{}}else qpV103.byBank={}}catch(_){qpV103.byBank={}}}
+function qpKeyV103(){return currentAccountUidV103?('shiroha_quiz_qp_v103_u_'+currentAccountUidV103):QP_KEY_V103}
+function qpSaveV103(){try{localStorage.setItem(qpKeyV103(),JSON.stringify({byBank:qpV103.byBank}))}catch(_){}}
+function qpLoadV103(){try{const raw=localStorage.getItem(qpKeyV103());if(raw){const d=JSON.parse(raw);qpV103.byBank=(d&&d.byBank&&typeof d.byBank==='object')?d.byBank:{}}else qpV103.byBank={}}catch(_){qpV103.byBank={}}}
 function qpBankV103(){const b=state.banks.find(x=>x.id===qpV103.bankId);return b||state.banks[0]||null}
 function qpBankDataV103(bankId){qpV103.byBank[bankId]=qpV103.byBank[bankId]||{questions:{},mode:'all',chapter:'__all__',index:0};return qpV103.byBank[bankId]}
 function qpProgressV103(bankId,qid){const d=qpBankDataV103(bankId);d.questions[qid]=d.questions[qid]||{answered:false,correct:false,starred:false};return d.questions[qid]}
