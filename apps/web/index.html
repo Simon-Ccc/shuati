@@ -36,6 +36,7 @@
       <button class="nav" data-view="wrongbook">错题本</button>
       <button class="nav" data-view="favorites">收藏夹</button>
       <button class="nav" data-view="records">记录</button>
+      <button class="nav" data-view="leaderboard">同学进度</button>
       <button class="nav" data-view="ai-settings">AI 设置</button>
       <button class="nav" data-view="settings">设置/导出</button>
     </aside>
@@ -49,6 +50,7 @@
         <div class="top-actions">
           <select id="active-bank-select"></select>
           <button id="save-all-btn" class="ghost">保存数据</button>
+          <button id="cloud-login-btn-v102" class="ghost cloud-login-btn-v102" type="button">登录 / 同步</button>
         </div>
       </header>
 
@@ -56,8 +58,8 @@
         <div class="hero-card dashboard-home-hero">
           <div class="dashboard-home-main">
             <p class="kicker">当前版本</p>
-            <h2 id="home-version-label">V37：AI功能强化版</h2>
-            <p class="dashboard-home-desc">新增独立 AI 设置、AI 辅助整理、AI 核对与 AI 补解析，并支持按范围分批处理题目。</p><div id="home-practice-scope-v8916" class="practice-scope-summary-v8916 home-practice-scope-v8916"></div>
+            <h2 id="home-version-label">V37：本地题库版</h2>
+            <p class="dashboard-home-desc">支持本地题库导入、练习和考试，并可按范围分批处理题目。</p><div id="home-practice-scope-v8916" class="practice-scope-summary-v8916 home-practice-scope-v8916"></div>
             <div class="dashboard-action-grid" aria-label="首页快捷入口">
               <button type="button" class="dashboard-action-card blue" onclick="var n=document.querySelector('.nav[data-view=&quot;practice&quot;]');if(n)n.click();">
                 <span>开始刷题</span><small>顺序练习</small>
@@ -147,34 +149,6 @@
             <label>上传文件<input id="import-file" type="file" accept=".txt,.json,.csv,.xlsx,.docx,.doc,.pdf" /></label>
           </div>
           <textarea id="import-text" placeholder="把题库文本粘贴到这里，或上传 .docx / .xlsx / .csv / .txt / .json / 文字层 PDF 后导入。扫描 PDF 请先使用下方 OCR 测试功能转成文本或 DOCX，再核对导入。支持：A、选项(正确答案)、答案：D、答案：A/B/C、解析：……"></textarea>
-          <div class="ai-import-panel-v99 ai-hidden-v99" id="ai-import-panel-v99">
-            <div class="ai-import-panel-head-v99">
-              <div><p class="kicker">AI Assisted Import</p><h3>AI 辅助整理</h3></div>
-              <span class="ocr-badge" id="ai-import-badge-v99">AI 辅助</span>
-            </div>
-            <p class="muted">AI 只整理本次指定的原始文本并生成题目预览，不会自动写入题库。原始文本会保留，整理失败时也不会覆盖现有识别结果。</p>
-            <div class="ai-scope-block-v992">
-              <span class="ai-field-caption-v992">处理范围</span>
-              <div class="ai-scope-options-v992">
-                <label class="ai-scope-option-v992"><input id="ai-import-scope-all-v992" name="ai-import-scope-v992" type="radio" value="all" checked /><span>全部原始文本</span></label>
-                <label class="ai-scope-option-v992"><input id="ai-import-scope-selection-v992" name="ai-import-scope-v992" type="radio" value="selection" /><span>当前选中文本</span><small id="ai-import-selection-size-v992">未选择</small></label>
-              </div>
-              <p id="ai-import-range-hint-v992" class="ai-range-hint-v992">将整理导入框中的全部原始文本。</p>
-            </div>
-            <div class="ai-import-meta-grid-v99">
-              <div><span>服务</span><b id="ai-import-provider-v99">未配置</b></div>
-              <div><span>模型</span><b id="ai-import-model-v99">—</b></div>
-              <div><span>本次处理</span><b id="ai-import-size-v99">0 字</b></div>
-              <div><span>当前预览</span><b id="ai-import-preview-count-v99">0 题</b></div>
-            </div>
-            <div id="ai-import-privacy-v99" class="notice">请先确认 AI 服务配置。</div>
-            <div class="actions ai-import-actions-v99">
-              <button id="ai-import-start-btn-v99" class="primary" type="button">开始整理</button>
-              <button id="ai-import-cancel-btn-v99" class="ghost" type="button">取消</button>
-              <button id="ai-import-settings-btn-v99" class="ghost ai-hidden-v99" type="button">前往 AI 设置</button>
-            </div>
-            <div id="ai-import-status-v99" class="notice">等待开始。</div>
-          </div>
           <div class="ocr-panel hidden" id="ocr-panel">
             <div class="ocr-panel-head">
               <div>
@@ -197,7 +171,7 @@
             <div class="notice" id="ocr-status">选择 PDF 后可使用 OCR 测试功能。首次使用会加载 OCR 扩展资源，识别速度取决于设备性能。</div>
             <textarea id="ocr-result" class="ocr-result" placeholder="OCR 识别结果会显示在这里，可核对后填入导入文本或下载 DOCX。"></textarea>
           </div>
-          <div class="actions import-actions-v51"><button id="parse-import-btn" class="primary">开始识别</button><button id="ai-organize-import-btn-v99" class="ghost" type="button">AI 辅助整理</button><button id="confirm-import-btn" class="primary" disabled>确认导入</button><button id="clear-import-btn" class="ghost">清空</button><span class="import-actions-spacer-v51" aria-hidden="true"></span><button id="find-replace-import-btn" class="ghost import-find-replace-trigger-v51" type="button">查找替换</button></div>
+          <div class="actions import-actions-v51"><button id="parse-import-btn" class="primary">开始识别</button><button id="confirm-import-btn" class="primary" disabled>确认导入</button><button id="clear-import-btn" class="ghost">清空</button><span class="import-actions-spacer-v51" aria-hidden="true"></span><button id="find-replace-import-btn" class="ghost import-find-replace-trigger-v51" type="button">查找替换</button></div>
         </div>
         <div class="card">
           <div class="section-head"><div><p class="kicker">Dual File Import</p><h2>双文件导入：题目文件 + 答案文件</h2></div><button id="dual-load-sample-btn" class="ghost">填入双文件示例</button></div>
@@ -357,6 +331,20 @@ C. 判断题
       <section id="wrongbook" class="view"><div class="card"><div class="section-head"><div><p class="kicker">Wrongbook</p><h2>错题整理</h2></div><button id="clear-wrong-btn" class="danger">清空错题</button></div><div class="page-art-strip wrongbook-art-strip"><div><b>错题复习与掌握状态</b><span>错题本页面使用一个复习素材，帮助区分学习场景，不额外堆叠图片。</span></div><img src="./media/wrong_question_review_clipboard.webp" alt="错题复习素材" /></div><div class="form-grid wrongbook-controls-v60"><label>掌握状态筛选<select id="wrong-status-filter"><option value="active">未掌握/复习中</option><option value="all">全部错题记录</option><option value="未掌握">未掌握</option><option value="复习中">复习中</option><option value="已掌握">已掌握</option></select></label><label>排序<select id="wrong-sort-mode"><option value="lastWrong">最近答错优先</option><option value="wrongCount">错误次数最多</option><option value="status">按掌握状态</option></select></label><label class="limit-field-v60">错题重练题量<div class="limit-control-v60"><select id="wrong-practice-limit"><option value="custom" selected>自定义</option><option value="50">50题</option><option value="100">100题</option><option value="half">一半</option><option value="all">全部</option></select><input id="wrong-practice-custom-count" type="number" value="20" min="1" inputmode="numeric" aria-label="自定义错题重练题量" /></div></label><label class="quick-action-field-v60">快捷操作<button id="practice-wrong-btn" class="primary" type="button">重练未掌握错题</button></label></div><div id="wrongbook-list" class="list"></div></div></section>
       <section id="favorites" class="view"><div class="card favorites-card-v596"><div class="section-head"><div><p class="kicker">Favorites</p><h2>收藏夹</h2></div><div class="pill" id="favorites-count-v596">0 道</div></div><div class="favorites-hero-v596"><div><b>收藏题独立复习</b><span>收藏夹已从错题本独立出来，保留当前题库的收藏题，可直接练习或取消收藏。</span></div><div class="favorites-actions-top-v596"><button id="practice-favorites-btn-v596" class="primary" type="button">练习收藏题</button><button id="clear-favorites-btn-v596" class="ghost danger" type="button">清空收藏</button></div></div><div id="favorites-list-v596" class="list favorites-list-v596"></div></div></section>
       <section id="records" class="view"><div class="card"><div class="section-head"><div><p class="kicker">Records</p><h2>记录筛选与导出</h2></div><div class="actions"><button id="export-records-btn" class="ghost">导出记录</button><button id="clear-records-btn" class="danger">清空记录</button></div></div><div class="page-art-strip records-art-strip"><div><b>查看练习与考试记录</b><span>记录页使用休息状态素材，表示阶段性回顾和复盘。</span></div><img src="./media/rest_sleep_pillow.webp" alt="休息睡眠素材" /></div><div class="form-grid"><label>记录类型<select id="record-mode-filter"><option value="all">全部</option><option value="练习">练习</option><option value="考试">考试</option></select></label><label>显示范围<select id="record-limit"><option value="30">最近30条</option><option value="100">最近100条</option><option value="all">全部</option></select></label><label>统计<button id="record-refresh-btn" class="ghost" type="button">刷新记录</button></label></div><div id="records-list" class="list"></div></div></section>
+      <section id="leaderboard" class="view">
+        <div class="card">
+          <div class="section-head">
+            <div><p class="kicker">Leaderboard</p><h2>同学学习进度</h2></div>
+            <span id="cloud-status-pill-v102" class="pill cloud-status-pill-v102">未登录</span>
+          </div>
+          <div id="cloud-class-panel-v102" class="cloud-class-panel-v102"></div>
+          <div class="form-grid cloud-leaderboard-toolbar-v102">
+            <label>题库<select id="leaderboard-bank-select-v102"></select></label>
+            <label class="cloud-leaderboard-refresh-v102">刷新<button id="leaderboard-refresh-btn-v102" class="ghost" type="button">刷新数据</button></label>
+          </div>
+          <div id="leaderboard-list-v102" class="list cloud-leaderboard-list-v102"></div>
+        </div>
+      </section>
       <section id="ai-settings" class="view">
         <div class="card ai-settings-card-v99">
           <div class="section-head">
@@ -441,7 +429,38 @@ C. 判断题
       <div class="actions"><button id="edit-save-btn" class="primary">保存修改</button><button id="edit-delete-btn" class="danger">删除本题</button></div>
     </div>
   </div>
+  <div id="cloud-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="section-head">
+        <div><p class="kicker">Cloud Sync</p><h2 id="cloud-modal-title-v102">登录 / 注册</h2></div>
+        <button id="cloud-modal-close-v102" class="ghost">关闭</button>
+      </div>
+      <div class="form-grid">
+        <label>邮箱<input id="cloud-email-v102" type="email" placeholder="you@example.com" autocomplete="email" /></label>
+        <label>密码<input id="cloud-password-v102" type="password" placeholder="至少 6 位" autocomplete="current-password" /></label>
+        <label id="cloud-nickname-field-v102" class="hidden">昵称（注册时填，显示在排行榜）<input id="cloud-nickname-v102" placeholder="例如：小明" /></label>
+      </div>
+      <div id="cloud-modal-status-v102" class="notice">登录后：跨设备同步学习进度，同学互看排行榜。</div>
+      <div class="actions">
+        <button id="cloud-submit-v102" class="primary">登录</button>
+        <button id="cloud-toggle-mode-v102" class="ghost">切换到注册</button>
+        <button id="cloud-forgot-v102" class="ghost">忘记密码</button>
+      </div>
+    </div>
+  </div>
+  <div id="cloud-admin-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-panel">
+      <div class="section-head">
+        <div><p class="kicker">Admin</p><h2 id="cloud-admin-title-v102">学生错题详情</h2></div>
+        <button id="cloud-admin-close-v102" class="ghost">关闭</button>
+      </div>
+      <div id="cloud-admin-body-v102" class="cloud-admin-body-v102"></div>
+    </div>
+  </div>
   <div id="app-toast" class="app-toast" aria-live="polite"></div>
+  <script src="./libs/supabase.min.js"></script>
+  <script src="./cloud-config.js"></script>
+  <script src="./cloud.js"></script>
   <script src="./question-bank.js"></script>
   <script src="./app.js"></script>
 

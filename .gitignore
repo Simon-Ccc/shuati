@@ -98,3 +98,6 @@ CLAUDE.md
 apps/web/CLAUDE.md
 apps/android/CLAUDE.md
 test/native-parser-regression/CLAUDE.md
+
+# Supabase CLI local metadata
+supabase/.temp/
